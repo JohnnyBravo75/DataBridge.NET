@@ -1,0 +1,249 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BE6EA153-A544-4B45-9276-859B880AC637}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DataBridge.Handler</RootNamespace>
+    <AssemblyName>DataBridge.Handler</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AlexPilotti.FTPS.Client, Version=1.1.0.27735, Culture=neutral, PublicKeyToken=48316da1e84b328d, processorArchitecture=MSIL">
+      <HintPath>..\packages\AlexFTPS.1.1.0.27735\lib\net20\AlexPilotti.FTPS.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AppLimit.CloudComputing.SharpBox, Version=1.2.0.542, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AppLimit.CloudComputing.SharpBox.1.2.0.542\lib\net40-full\AppLimit.CloudComputing.SharpBox.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AppLimit.CloudComputing.SharpBox.ExperimentalProvider, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AppLimit.CloudComputing.SharpBox.1.2.0.542\lib\net40-full\AppLimit.CloudComputing.SharpBox.ExperimentalProvider.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AppLimit.CloudComputing.SharpBox.MockProvider, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AppLimit.CloudComputing.SharpBox.1.2.0.542\lib\net40-full\AppLimit.CloudComputing.SharpBox.MockProvider.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CronExpressionDescriptor, Version=1.21.2.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+      <HintPath>..\packages\CronExpressionDescriptor.1.21.2\lib\net45\CronExpressionDescriptor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="DropBoxTokenIssuer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AppLimit.CloudComputing.SharpBox.1.2.0.542\lib\net40-full\DropBoxTokenIssuer.exe</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EPPlus, Version=3.0.0.2, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.3.0.0.2\lib\net20\EPPlus.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json.Net40, Version=3.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AppLimit.CloudComputing.SharpBox.1.2.0.542\lib\net40-full\Newtonsoft.Json.Net40.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NPOI, Version=1.2.4.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Reference\Excel\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="NReco.LambdaParser, Version=1.0.5.0, Culture=neutral, PublicKeyToken=50b5ad72a1d364c6, processorArchitecture=MSIL">
+      <HintPath>..\packages\NReco.LambdaParser.1.0.5\lib\portable45-net45+win8+wp8+wpa81\NReco.LambdaParser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Oracle.DataAccess, Version=2.112.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=x86">
+      <HintPath>..\packages\Oracle.DataAccess.x86.2.112.1.0\lib\Oracle.DataAccess.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Quartz, Version=2.5.0.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Quartz.2.5.0\lib\net40\Quartz.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Renci.SshNet, Version=2016.0.0.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
+      <HintPath>..\packages\SSH.NET.2016.0.0\lib\net40\Renci.SshNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="XPathReader">
+      <HintPath>..\Reference\XPathReader.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\AccessAdapter.cs" />
+    <Compile Include="Services\FolderSynchronizer\FtpFolderSynchronizer.cs" />
+    <Compile Include="Services\FolderSynchronizer\FileFolderSynchronizer.cs" />
+    <Compile Include="Services\FolderSynchronizer\FtpSyncOperations.cs" />
+    <Compile Include="Services\FolderSynchronizer\FileSyncOperations.cs" />
+    <Compile Include="Services\FolderSynchronizer\ISyncOperations.cs" />
+    <Compile Include="Services\ConnectionInfos\ConnectionInfoBase.cs" />
+    <Compile Include="Services\Adapter\FileAdapter\ConnectionInfos\ExcelConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\FileAdapter\ConnectionInfos\FileConnectionInfoBase.cs" />
+    <Compile Include="Services\ConnectionInfos\FtpConnectionInfo.cs" />
+    <Compile Include="Services\ConnectionInfos\SmtpConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\FileAdapter\Excel2007NativeAdapter.cs" />
+    <Compile Include="Services\Adapter\FileAdapter\ExcelNativeAdapter.cs" />
+    <Compile Include="Services\Adapter\IDataAdapterBase.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\DbAdapter.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\Access2007ConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\FileAdapter\ConnectionInfos\FlatFileConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\DBaseConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\DbConnectionInfoBase.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\MySqlConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\OracleConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\PostgreSqlConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\SqLiteConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\AccessConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\SqlServerConnectionInfo.cs" />
+    <Compile Include="Services\Adapter\DbAdapter\IDbAdapter.cs" />
+    <Compile Include="Services\FolderSynchronizer\FolderSynchronizer.cs" />
+    <Compile Include="Services\Adapter\FileAdapter\FlatFileAdapter.cs" />
+    <Compile Include="Services\Adapter\FileAdapter\XPathAdapter.cs" />
+    <Compile Include="Services\Adapter\FileAdapter\XmlAdapter.cs" />
+    <Compile Include="Services\Formatters\CsvToDataTableFormatter.cs" />
+    <Compile Include="Services\Formatters\DataTableToCsvFormatter.cs" />
+    <Compile Include="Services\Formatters\DataTableToCustomPatternFormatter.cs" />
+    <Compile Include="Services\Formatters\DataTableToFixedLengthFormatter.cs" />
+    <Compile Include="Services\Formatters\DataTableToHtmlFormatter.cs" />
+    <Compile Include="Services\Formatters\DataTableToJsonFormatter.cs" />
+    <Compile Include="Services\Formatters\DataTableToSimpleXmlFormatter.cs" />
+    <Compile Include="Services\Formatters\DataTableToTemplateFormatter.cs" />
+    <Compile Include="Services\Formatters\DataTableToXPathFormatter.cs" />
+    <Compile Include="Services\Formatters\FlatFileToDataTableFormatter.cs" />
+    <Compile Include="Services\Formatters\DefaultFormatter.cs" />
+    <Compile Include="Services\Formatters\FixedLengthToDataTableFormatter.cs" />
+    <Compile Include="Services\Formatters\FormatterBase.cs" />
+    <Compile Include="Services\Formatters\JsonToDataTableFormatter.cs" />
+    <Compile Include="Services\Formatters\Model\FormatterOption.cs" />
+    <Compile Include="Services\Formatters\Model\FormatterOptions.cs" />
+    <Compile Include="Services\Formatters\Model\IHasXmlNameSpaces.cs" />
+    <Compile Include="Services\Formatters\Model\XmlNameSpace.cs" />
+    <Compile Include="Services\Formatters\Model\XPathMapping.cs" />
+    <Compile Include="Services\Formatters\Model\XPathMappingList.cs" />
+    <Compile Include="Services\Formatters\EventLogToDataTableFormatter.cs" />
+    <Compile Include="Services\Formatters\RegExToDataTableFormatter.cs" />
+    <Compile Include="Services\Formatters\XmlToDataSetFormatter.cs" />
+    <Compile Include="Services\Formatters\XmlToDataTableFormatter.cs" />
+    <Compile Include="Services\Formatters\XPathToDataTableFormatter.cs" />
+    <Compile Include="Services\Formatters\XslToDataTableFormatter.cs" />
+    <Compile Include="Services\Ftp\Ftp.cs" />
+    <Compile Include="Services\Ftp\FtpBase.cs" />
+    <Compile Include="Services\Ftp\FtpFileInfo.cs" />
+    <Compile Include="Services\Ftp\FtpS.cs" />
+    <Compile Include="Services\Ftp\IFtp.cs" />
+    <Compile Include="Services\Ftp\SFtp.cs" />
+    <Compile Include="Services\Common\HttpServer.cs" />
+    <Compile Include="Services\Common\NetworkShare.cs" />
+    <Compile Include="Core\Model\Field.cs" />
+    <Compile Include="Core\Model\FieldDefinition.cs" />
+    <Compile Include="Core\Model\FieldDefinitionList.cs" />
+    <Compile Include="Services\Oracle\OracleNativeDbAdapter.cs" />
+    <Compile Include="Services\Oracle\OracleNativeConnectionInfo.cs" />
+    <Compile Include="Services\Oracle\OracleTableWatcher.cs" />
+    <Compile Include="Core\Model\Parameter.cs" />
+    <Compile Include="Services\Scheduler\Quartz\ScheduleInfos\CronScheduleInfo.cs" />
+    <Compile Include="Services\Scheduler\Quartz\ScheduleInfos\DailyScheduleInfo.cs" />
+    <Compile Include="Services\Scheduler\Quartz\ScheduleInfos\IntervalScheduleInfo.cs" />
+    <Compile Include="Services\Scheduler\Quartz\ScheduleInfos\ScheduleInfo.cs" />
+    <Compile Include="Services\Scheduler\Quartz\Scheduler.cs" />
+    <Compile Include="Core\ServiceInstaller\LocalServiceInstaller.cs" />
+    <Compile Include="Services\Shell\CommandShellAction.cs" />
+    <Compile Include="Services\Shell\PowerShellAction.cs" />
+    <Compile Include="Services\Shell\ProcessHandler.cs" />
+    <Compile Include="Core\Token\TokenManager.cs" />
+    <Compile Include="Core\Token\TokenProcessor.cs" />
+    <Compile Include="Services\Webservice\DynamicWebService.cs" />
+    <Compile Include="Services\Webservice\SimpleWebserviceRequest.cs" />
+    <Compile Include="Services\Webservice\WebServiceInfo.cs" />
+    <Compile Include="Services\Web\SimpleWebRequest.cs" />
+    <Compile Include="Services\Common\WindowsNetwork.cs" />
+    <Compile Include="Services\WMI\IWmiAccess.cs" />
+    <Compile Include="Services\WMI\ProcessWatcher.cs" />
+    <Compile Include="Core\ServiceInstaller\ServiceConstants.cs" />
+    <Compile Include="Services\WMI\UsbDeviceWatcher.cs" />
+    <Compile Include="Core\ServiceInstaller\RemoteServiceInstaller.cs" />
+    <Compile Include="Services\WMI\WMIWatcher.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="job_scheduling_data_2_0.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataBridge.Common\DataBridge.Common.csproj">
+      <Project>{3d5e7782-64b8-4583-a3a6-cc54a7244730}</Project>
+      <Name>DataBridge.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="ADOX">
+      <Guid>{00000600-0000-0010-8000-00AA006D2EA4}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>8</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

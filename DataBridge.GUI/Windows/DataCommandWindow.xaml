@@ -1,0 +1,46 @@
+﻿<WPFControls:WPFWindow x:Class="DataBridge.GUI.Windows.DataCommandWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="DataCommand" Width="900" Height="600"
+    xmlns:WPFControls="clr-namespace:DataBridge.GUI.Core.View.WPFControls"
+    xmlns:UserControls="clr-namespace:DataBridge.GUI.UserControls"
+    xmlns:Commands="clr-namespace:Microsoft.Practices.Prism.Commands;assembly=Microsoft.Practices.Prism"
+    WindowStartupLocation="CenterScreen"
+>
+    <!--**************Resources******************-->
+    <WPFControls:WPFWindow.Resources>
+    </WPFControls:WPFWindow.Resources>
+
+    <!--**************RootGrid******************-->
+    <Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="35" />
+        </Grid.RowDefinitions>
+
+        <UserControls:DataCommandContainerControl x:Name="DataCommandContainerControl" Grid.Row="0" />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5,0,0,0">
+            <WPFControls:WPFButton Content="Ok" Width="100" Click="btnOk_Click" x:Name="btnOk" Height="25" />
+
+            <!--<Button Content="Click Me" x:Name="testButton">
+                <Behaviors:Events.Commands>
+                    <Behaviors:EventCommandCollection x:Name="EventCommandCollection">
+                        <Behaviors:EventCommand EventName="MouseEnter" CommandName="MouseEnterCommand" />
+                        <Behaviors:EventCommand EventName="MouseLeave" CommandName="MouseLeaveCommand" />
+                        <Behaviors:EventCommand EventName="Click" CommandName="ClickCommand" Parameter="sdsds" />
+                    </Behaviors:EventCommandCollection>
+                </Behaviors:Events.Commands>
+            </Button>-->
+
+            <!--<Button Content="Click Me2">
+                <xpg:Extensions.Commands>
+                        <xpg:Command EventName="Click" Binding="{Binding ClickCommand}" ParameterBinding="{Binding ButtonTitle}" />
+                        <xpg:Command EventName="Holding" Binding="{Binding HoldCommand}" ParameterBinding="{Binding ButtonTitle}" />
+                </xpg:Extensions.Commands>
+            </Button>-->
+
+            <WPFControls:WPFButton Content="Cancel" Width="100" Click="btnCancel_Click" x:Name="btnCancel" Height="25" Margin="5,0,0,0" />
+        </StackPanel>
+    </Grid>
+</WPFControls:WPFWindow>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<GetAddressResponse>
+  <GetAddressResult>
+    <result state="OK">
+      <address lastname="Harper" lastname2="" firstname="Charlie" department="" phone="" phone_country="" phone_areacode="" phone_callnumber="" fax="" fax_country="" fax_areacode="" fax_callnumber="" mobilephone="" email="charper@web.de" webaddress="" sex="m" abo="false" createdate="08.03.2013 10:27:44" modifydate="08.03.2013 10:27:44" createuser="" modifyuser="SMITH" street="Seerosenstr." streetnumber="55" streetnumberaddition="" fullstreet="Seerosenstr. 55" streetaddition="" city="Stuttgart" cityaddition="" postalcode="70563" postalcodeaddition="" building="" postofficebox="" postofficeboxcity="" postofficeboxpc="" corporateclientpc="" lettersalutation="" type="PrivateContact">
+        <salutation key="1" value="Herr" />
+        <country key="DE" value="Deutschland" />
+        <state key="08" value="Baden-Württemberg" />
+        <addresssource key="06" value="Import" note="IM-ANA12OE" counter="1" />
+        <branch key="898" value="Labor sonstige" counter="2" />
+        <addresslock key="94" value="Datenschutz-Sperre" counter="1" />
+      </address>
+      <address lastname="Schmidt" lastname2="" firstname="Walden" department="" phone="" phone_country="" phone_areacode="" phone_callnumber="" fax="" fax_country="" fax_areacode="" fax_callnumber="" mobilephone="" email="wschmidt@web.de" webaddress="" sex="m" abo="false" createdate="08.03.2013 10:27:44" modifydate="08.03.2013 10:27:44" createuser="" modifyuser="SMITH" street="Seerosenstr." streetnumber="55" streetnumberaddition="" fullstreet="Seerosenstr. 55" streetaddition="" city="Stuttgart" cityaddition="" postalcode="70563" postalcodeaddition="" building="" postofficebox="" postofficeboxcity="" postofficeboxpc="" corporateclientpc="" lettersalutation="" type="PrivateContact">
+        <salutation key="1" value="Herr" />
+        <country key="DE" value="Deutschland" />
+        <state key="082" value="Hessen" />
+        <addresssource key="062" value="Import2" note="IM-ANA12OE22" counter="1" />
+        <branch key="89822" value="Labor sonstige2" counter="2" />
+        <addresslock key="942" value="Datenschutz-Sperre2" counter="1" />
+      </address>
+    </result>
+  </GetAddressResult>
+</GetAddressResponse>

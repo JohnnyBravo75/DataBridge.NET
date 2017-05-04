@@ -1,0 +1,36 @@
+﻿<Application x:Class="DataBridge.GUI.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--StartupUri="Windows\MainWindow.xaml"-->
+    <Application.Resources>
+
+        <SolidColorBrush x:Key="VerticalGridLines" Color="LightGray" />
+        <SolidColorBrush x:Key="HorizontalGridLines" Color="LightGray" />
+
+        <!--<Style TargetType="{x:Type ContentControl}">
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"></Setter>
+        </Style>
+        <Style TargetType="{x:Type FrameworkElement}">
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"></Setter>
+        </Style>
+
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+        </Style>-->
+
+        <Style x:Key="GroupItemContainerStyle" TargetType="{x:Type GroupItem}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Expander IsExpanded="True">
+                            <Expander.Header>
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                            </Expander.Header>
+                            <ItemsPresenter />
+                        </Expander>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Application.Resources>
+</Application>

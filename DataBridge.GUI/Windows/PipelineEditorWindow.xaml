@@ -1,0 +1,23 @@
+﻿<wpfControls:WPFWindow x:Class="DataBridge.GUI.Windows.PipelineEditorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="PipelineEditor" Width="900" Height="700"
+    xmlns:Commands="clr-namespace:Microsoft.Practices.Prism.Commands;assembly=Microsoft.Practices.Prism"
+    xmlns:wpfControls="clr-namespace:DataBridge.GUI.Core.View.WPFControls"
+    xmlns:utils="clr-namespace:DataBridge.GUI.Core.Utils"
+    xmlns:converters="clr-namespace:DataBridge.GUI.Converters"
+    xmlns:userControls="clr-namespace:DataBridge.GUI.UserControls"
+    WindowStartupLocation="CenterScreen"
+>
+    <!--**************Resources******************-->
+    <wpfControls:WPFWindow.Resources>
+    </wpfControls:WPFWindow.Resources>
+
+    <!--**************RootGrid******************-->
+    <Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <userControls:PipelineEditorControl x:Name="PipelineEditorControl" DataContext="{Binding}" Grid.Row="0" />
+    </Grid>
+</wpfControls:WPFWindow>

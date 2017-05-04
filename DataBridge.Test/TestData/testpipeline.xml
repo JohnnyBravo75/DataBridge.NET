@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Pipeline xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PipelineCommands>
+    <PipelineCommand xsi:type="TimerTrigger">
+      <Parameters>
+        <CommandParameter Name="Interval" Value="" DataType="Double">
+          <NotNull>false</NotNull>
+        </CommandParameter>
+      </Parameters>
+      <PipelineCommands>
+        <PipelineCommand xsi:type="FileLooper">
+          <Parameters>
+            <CommandParameter Name="SourceDirectory" Value="">
+              <NotNull>false</NotNull>
+            </CommandParameter>
+            <CommandParameter Name="FileFilter" Value="">
+              <NotNull>false</NotNull>
+            </CommandParameter>
+            <CommandParameter Name="File" Value="" Direction="Out">
+              <NotNull>false</NotNull>
+            </CommandParameter>
+          </Parameters>
+          <PipelineCommands>
+            <PipelineCommand xsi:type="FlatFileReader">
+              <Parameters>
+                <CommandParameter Name="File" Value="">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="EncodingName" Value="" DataType="System.String">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="Data" Value="" Direction="Out">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="Separator" Value="" DataType="System.String">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+              </Parameters>
+              <PipelineCommands>
+                <PipelineCommand xsi:type="TableFilter">
+                  <Parameters />
+                  <FilterDefinition>
+                    <FiltersCriterias />
+                  </FilterDefinition>
+                </PipelineCommand>
+                <PipelineCommand xsi:type="FlatFileWriter">
+                  <Parameters>
+                    <CommandParameter Name="File" Value="">
+                      <NotNull>false</NotNull>
+                    </CommandParameter>
+                    <CommandParameter Name="EncodingName" Value="" DataType="System.String">
+                      <NotNull>false</NotNull>
+                    </CommandParameter>
+                    <CommandParameter Name="Data" Value="" Direction="In" DataType="">
+                      <NotNull>false</NotNull>
+                    </CommandParameter>
+                    <CommandParameter Name="Separator" Value="" DataType="System.String">
+                      <NotNull>false</NotNull>
+                    </CommandParameter>
+                  </Parameters>
+                  <Formatter xsi:type="DefaultFormatter">
+                    <FormatterOptions />
+                  </Formatter>
+                </PipelineCommand>
+              </PipelineCommands>
+              <Formatter xsi:type="CsvToDataTableFormatter">
+                <FormatterOptions>
+                  <FormatterOption Name="Separator" Value="">
+                    <NotNull>false</NotNull>
+                  </FormatterOption>
+                  <FormatterOption Name="Enclosure" Value="">
+                    <NotNull>false</NotNull>
+                  </FormatterOption>
+                  <FormatterOption Name="Quoted" Value="">
+                    <NotNull>false</NotNull>
+                  </FormatterOption>
+                </FormatterOptions>
+              </Formatter>
+            </PipelineCommand>
+            <PipelineCommand xsi:type="FileMover">
+              <Parameters>
+                <CommandParameter Name="TargetDirectory" Value="">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="SourceFile" Value="">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="Mode" Value="" Direction="In">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="File" Value="" Direction="Out">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+              </Parameters>
+            </PipelineCommand>
+            <PipelineCommand xsi:type="FileZipper">
+              <Parameters>
+                <CommandParameter Name="TargetDirectory" Value="">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="SourceFile" Value="">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="ZipName" Value="">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="Password" Value="" DataType="System.String">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="RemoveSourceFile" Value="">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+                <CommandParameter Name="File" Value="" Direction="Out">
+                  <NotNull>false</NotNull>
+                </CommandParameter>
+              </Parameters>
+            </PipelineCommand>
+          </PipelineCommands>
+        </PipelineCommand>
+      </PipelineCommands>
+    </PipelineCommand>
+  </PipelineCommands>
+  <CurrentExecptionHandling>CancelCurrentBranch</CurrentExecptionHandling>
+</Pipeline>

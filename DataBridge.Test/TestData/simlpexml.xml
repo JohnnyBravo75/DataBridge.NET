@@ -1,0 +1,86 @@
+version="1.0" encoding="UTF-8"
+<address>
+<lastname>Brüderle</lastname>
+<lastname2></lastname2>
+<firstname>Matthias</firstname>
+<department></department>
+<phone></phone>
+<phone_country></phone_country>
+<phone_areacode></phone_areacode>
+<phone_callnumber></phone_callnumber>
+<fax></fax>
+<fax_country></fax_country>
+<fax_areacode></fax_areacode>
+<fax_callnumber></fax_callnumber>
+<mobilephone></mobilephone>
+<email>bruederlem@web.de</email>
+<webaddress></webaddress>
+<sex>m</sex>
+<abo>false</abo>
+<createdate>08.03.2013 10:27:44</createdate>
+<modifydate>08.03.2013 10:27:44</modifydate>
+<createuser></createuser>
+<modifyuser>DATAM</modifyuser>
+<street>Seerosenstr.</street>
+<streetnumber>39</streetnumber>
+<streetnumberaddition></streetnumberaddition>
+<fullstreet>Seerosenstr. 39</fullstreet>
+<streetaddition></streetaddition>
+<city>Stuttgart</city>
+<cityaddition></cityaddition>
+<postalcode>70563</postalcode>
+<postalcodeaddition></postalcodeaddition>
+<building></building>
+<postofficebox></postofficebox>
+<postofficeboxcity></postofficeboxcity>
+<postofficeboxpc></postofficeboxpc>
+<corporateclientpc></corporateclientpc>
+<kgs>000000008111000</kgs>
+<lettersalutation></lettersalutation>
+<vogelid>0010391645</vogelid>
+<systemid>1021198213</systemid>
+<type>PrivateContact</type>
+</address>
+<address>
+<lastname>Lauzi</lastname>
+<lastname2></lastname2>
+<firstname>Thomas</firstname>
+<department></department>
+<phone></phone>
+<phone_country></phone_country>
+<phone_areacode></phone_areacode>
+<phone_callnumber></phone_callnumber>
+<fax></fax>
+<fax_country></fax_country>
+<fax_areacode></fax_areacode>
+<fax_callnumber></fax_callnumber>
+<mobilephone></mobilephone>
+<email>bruederlem@web.de</email>
+<webaddress></webaddress>
+<sex>m</sex>
+<abo>false</abo>
+<createdate>08.03.2013 10:27:44</createdate>
+<modifydate>08.03.2013 10:27:44</modifydate>
+<createuser></createuser>
+<modifyuser>DATAM</modifyuser>
+<street>Seerosenstr.</street>
+<streetnumber>39</streetnumber>
+<streetnumberaddition></streetnumberaddition>
+<fullstreet>Seerosenstr. 39</fullstreet>
+<streetaddition></streetaddition>
+<city>Stuttgart</city>
+<cityaddition></cityaddition>
+<postalcode>70563</postalcode>
+<postalcodeaddition></postalcodeaddition>
+<building></building>
+<postofficebox></postofficebox>
+<postofficeboxcity></postofficeboxcity>
+<postofficeboxpc></postofficeboxpc>
+<corporateclientpc></corporateclientpc>
+<kgs>000000008111000</kgs>
+<lettersalutation></lettersalutation>
+<vogelid>0010391645</vogelid>
+<systemid>1021198213</systemid>
+<type>PrivateContact</type>
+</address>
+

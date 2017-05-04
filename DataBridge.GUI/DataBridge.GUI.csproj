@@ -1,0 +1,277 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F854202E-7F60-4C87-A539-98D34154AD2A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DataBridge.GUI</RootNamespace>
+    <AssemblyName>DataBridge.GUI</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <ApplicationManifest>DataBridge.GUI.exe.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Practices.Prism">
+      <HintPath>..\Reference\Prism\Microsoft.Practices.Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity">
+      <HintPath>..\Reference\Prism\Microsoft.Practices.Unity.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>..\Reference\Extended WPF Toolkit\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="Converters\ServiceStatusToColorConverter.cs" />
+    <Compile Include="Core\View\WPFControls\WPFTitleText.xaml.cs">
+      <DependentUpon>WPFTitleText.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Service.cs" />
+    <Compile Include="UserControls\CommandEditors\DataCommandEditor.cs" />
+    <Compile Include="UserControls\DataCommandContainerControl.xaml.cs">
+      <DependentUpon>DataCommandContainerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\DataCommandControl.xaml.cs">
+      <DependentUpon>DataCommandControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ServiceControllerControl.xaml.cs">
+      <DependentUpon>ServiceControllerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\PipelineEditorControl.xaml.cs">
+      <DependentUpon>PipelineEditorControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\Base\DataCommandViewModelBase.cs" />
+    <Compile Include="ViewModels\DataCommandViewModel.cs" />
+    <Compile Include="ViewModels\PipelineEditorViewModel.cs" />
+    <Compile Include="ViewModels\ServiceControllerViewModel.cs" />
+    <Compile Include="ViewModels\ServiceMonitorViewModel.cs" />
+    <Compile Include="ServiceController.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UserControls\ServiceMonitorControl.xaml.cs">
+      <DependentUpon>ServiceMonitorControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Base\ViewModelBase.cs" />
+    <Compile Include="Converters\BooleanToInverseConverter.cs" />
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\DatatypeImageConverter.cs" />
+    <Compile Include="Converters\DebugConverter.cs" />
+    <Compile Include="Converters\DefaultConverter.cs" />
+    <Compile Include="Converters\NullImageConverter.cs" />
+    <Compile Include="Converters\ObjectToVisibilityConverter.cs" />
+    <Compile Include="Converters\StringFormatConverter.cs" />
+    <Compile Include="Converters\StringToBooleanConverter.cs" />
+    <Compile Include="Converters\StringTruncateConverter.cs" />
+    <Compile Include="Core\DependencyInjection\DependencyContainer.cs" />
+    <Compile Include="Core\DependencyInjection\IUnityConfigurator.cs" />
+    <Compile Include="Core\EventBinding\DependencyObjectCollection.cs" />
+    <Compile Include="Core\EventBinding\EventBehavior.cs" />
+    <Compile Include="Core\EventBinding\EventBehaviorCollection.cs" />
+    <Compile Include="Core\EventBinding\EventCommand.cs" />
+    <Compile Include="Core\EventBinding\EventCommandCollection.cs" />
+    <Compile Include="Core\EventBinding\Events.cs" />
+    <Compile Include="Core\Extensions\DataGridExtensions.cs" />
+    <Compile Include="Core\Extensions\DependencyObjectExtensions.cs" />
+    <Compile Include="Core\Extensions\ListCollectionViewExtensions.cs" />
+    <Compile Include="Core\Extensions\VisualTreeExtensions.cs" />
+    <Compile Include="Core\Utils\DataContextProxy.cs" />
+    <Compile Include="Core\Utils\DataGridContextHelper.cs" />
+    <Compile Include="Core\Utils\PropertyObserver.cs" />
+    <Compile Include="Core\Utils\ResourceUtil.cs" />
+    <Compile Include="Core\Utils\VisualTreeUtil.cs" />
+    <Compile Include="Core\View\ViewManager.cs" />
+    <Compile Include="Core\View\ViewModels\ViewModelBase.cs" />
+    <Compile Include="Core\View\Windows\IWindow.cs" />
+    <Compile Include="Core\View\WPFControls\WPFButton.cs" />
+    <Compile Include="Core\View\WPFControls\WPFCheckBox.cs" />
+    <Compile Include="Core\View\WPFControls\WPFComboBox.cs" />
+    <Compile Include="Core\View\WPFControls\WPFComboBoxItem.cs" />
+    <Compile Include="Core\View\WPFControls\WPFGridView.cs" />
+    <Compile Include="Core\View\WPFControls\WPFGridViewCheckBoxColumn.cs" />
+    <Compile Include="Core\View\WPFControls\WPFGridViewComboBoxColumn.cs" />
+    <Compile Include="Core\View\WPFControls\WPFGridViewTemplateColumn.cs" />
+    <Compile Include="Core\View\WPFControls\WPFGridViewTextColumn.cs" />
+    <Compile Include="Core\View\WPFControls\WPFListBox.cs" />
+    <Compile Include="Core\View\WPFControls\WPFListBoxItem.cs" />
+    <Compile Include="Core\View\WPFControls\WPFRadioButton.cs" />
+    <Compile Include="Core\View\WPFControls\WPFTabControl.cs" />
+    <Compile Include="Core\View\WPFControls\WPFTabItem.cs" />
+    <Compile Include="Core\View\WPFControls\WPFTextBox.cs" />
+    <Compile Include="Core\View\WPFControls\WPFToolBar.cs" />
+    <Compile Include="Core\View\WPFControls\WPFTreeView.cs" />
+    <Compile Include="Core\View\WPFControls\WPFUserControl.cs" />
+    <Compile Include="Core\View\WPFControls\WPFWindow.cs" />
+    <Compile Include="Windows\DataCommandWindow.xaml.cs">
+      <DependentUpon>DataCommandWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\PipelineEditorWindow.xaml.cs">
+      <DependentUpon>PipelineEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ServiceMonitorWindow.xaml.cs">
+      <DependentUpon>ServiceMonitorWindow.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Core\View\WPFControls\WPFTitleText.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\DataCommandContainerControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\DataCommandControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\ServiceControllerControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\PipelineEditorControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\ServiceMonitorControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\DataCommandWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\PipelineEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\ServiceMonitorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\DefaultDisplayObject.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="DataBridge.GUI.exe.manifest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Icons\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataBridge.Common\DataBridge.Common.csproj">
+      <Project>{3d5e7782-64b8-4583-a3a6-cc54a7244730}</Project>
+      <Name>DataBridge.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataBridge.Handler\DataBridge.Handler.csproj">
+      <Project>{be6ea153-a544-4b45-9276-859b880ac637}</Project>
+      <Name>DataBridge.Handler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataBridge.Pipeline\DataBridge.Pipeline.csproj">
+      <Project>{17F0FB26-CE8D-4160-AECC-79D1156FA27D}</Project>
+      <Name>DataBridge.Pipeline</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataBridge.Runtime\DataBridge.Runtime.csproj">
+      <Project>{ebe2829e-1c11-4c2c-b32b-1831f9111faa}</Project>
+      <Name>DataBridge.Runtime</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\mm-Play.png" />
+    <Resource Include="Resources\Images\mm-Stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\Minus.png" />
+    <Resource Include="Resources\Images\Plus.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

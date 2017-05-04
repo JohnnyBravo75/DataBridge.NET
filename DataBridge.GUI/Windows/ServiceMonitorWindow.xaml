@@ -1,0 +1,10 @@
+﻿<WpfControls:WPFWindow x:Class="DataBridge.GUI.Windows.ServiceMonitorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Service Monitor" Height="400" Width="600"
+        xmlns:UserControls="clr-namespace:DataBridge.GUI.UserControls"
+        xmlns:WpfControls="clr-namespace:DataBridge.GUI.Core.View.WPFControls">
+    <Grid>
+        <UserControls:ServiceMonitorControl x:Name="ServiceMonitorControl" Grid.Row="0" />
+    </Grid>
+</WpfControls:WPFWindow>
