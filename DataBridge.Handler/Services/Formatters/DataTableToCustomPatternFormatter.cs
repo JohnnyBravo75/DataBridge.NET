@@ -12,6 +12,7 @@ namespace DataBridge.Formatters
 
         public DataTableToCustomPatternFormatter()
         {
+            this.FormatterOptions.Add(new FormatterOption() { Name = "Pattern", Value = "" });
         }
 
         [XmlElement]
