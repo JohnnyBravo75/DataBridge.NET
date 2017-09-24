@@ -592,7 +592,7 @@ namespace DataBridge.Services
             var table = new DataTable();
             table.TableName = this.TableName;
 
-            if (string.IsNullOrEmpty(table.TableName))
+            if (string.IsNullOrEmpty(this.TableName))
             {
                 yield return table;
             }
@@ -612,21 +612,46 @@ namespace DataBridge.Services
                     {
                         // create the columns in the datatable
                         var columnName = "";
+                        var primaryKeys = new List<DataColumn>();
                         foreach (DataRow row in schemaTable.Rows)
                         {
                             // take the original column name
                             columnName = (string)row["ColumnName"];
 
-                            var column = new DataColumn(columnName)
+                            var column = new DataColumn(columnName);
+
+                            column.DataType = (Type)(row["DataType"]);
+
+                            if (schemaTable.Columns.Contains("AllowDBNull") && row["AllowDBNull"] is bool)
                             {
-                                DataType = (Type)(row["DataType"]),
-                                Unique = (bool)row["IsUnique"],
-                                AllowDBNull = (bool)row["AllowDBNull"],
-                                AutoIncrement = (bool)row["IsAutoIncrement"]
-                            };
+                                column.AllowDBNull = (bool)row["AllowDBNull"];
+                            }
+
+                            if (schemaTable.Columns.Contains("IsUnique") && row["IsUnique"] is bool)
+                            {
+                                column.Unique = (bool)row["IsUnique"];
+                            }
+
+                            if (schemaTable.Columns.Contains("IsAutoIncrement") && row["IsAutoIncrement"] is bool)
+                            {
+                                column.AutoIncrement = (bool)row["IsAutoIncrement"];
+                            }
+
+                            if (schemaTable.Columns.Contains("ColumnSize") && column.DataType == typeof(string))
+                            {
+                                column.MaxLength = (int)row["ColumnSize"];
+                            }
+
+                            if (schemaTable.Columns.Contains("IsKey") && row["IsKey"] is bool)
+                            {
+                                primaryKeys.Add(column);
+                            }
+
                             listCols.Add(column);
                             table.Columns.Add(column);
                         }
+
+                        table.PrimaryKey = primaryKeys.ToArray();
                     }
 
                     // Read rows from DataReader and populate the DataTable
@@ -636,7 +661,7 @@ namespace DataBridge.Services
                         var dataRow = table.NewRow();
                         for (var i = 0; i < listCols.Count; i++)
                         {
-                            dataRow[listCols[i]] = reader[i];
+                            dataRow[listCols[i].ColumnName] = reader[i];
                         }
 
                         table.Rows.Add(dataRow);

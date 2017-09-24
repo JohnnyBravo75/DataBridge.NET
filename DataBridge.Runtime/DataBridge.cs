@@ -73,8 +73,23 @@ namespace DataBridge.Runtime
 
             LogManager.Instance.LogNamedDebug(this.Name, this.GetType(), "".PadRight(80, '-'));
             LogManager.Instance.LogNamedDebug(this.Name, this.GetType(), this.Name + " initializing");
-            LogManager.Instance.LogNamedDebugFormat(this.Name, this.GetType(), "Databridge config path '{0}'", this.ConfigPath);
+            LogManager.Instance.LogNamedDebugFormat(this.Name, this.GetType(), this.Name + " config path '{0}'", this.ConfigPath);
 
+            // Load Plugins
+            this.LoadPlugins();
+
+            // Set working path
+            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
+            // Load DataBridge
+            if (!string.IsNullOrEmpty(configFileName))
+            {
+                this.Load(configFileName);
+            }
+        }
+
+        private void LoadPlugins()
+        {
             try
             {
                 LogManager.Instance.LogNamedDebugFormat(this.Name, this.GetType(), "Loading plugins in '{0}'", this.PlugInPath);
@@ -95,13 +110,6 @@ namespace DataBridge.Runtime
             catch (Exception ex)
             {
                 LogManager.Instance.LogNamedError(this.Name, this.GetType(), "Plugins NOT loaded", ex);
-            }
-
-            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-
-            if (!string.IsNullOrEmpty(configFileName))
-            {
-                this.Load(configFileName);
             }
         }
 
@@ -168,7 +176,7 @@ namespace DataBridge.Runtime
 
         private void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            LogManager.Instance.LogNamedErrorFormat(this.Name, this.GetType(), "Databridge has exited");
+            LogManager.Instance.LogNamedErrorFormat(this.Name, this.GetType(), this.Name + " has exited");
             LogManager.Instance.FlushBuffers();
         }
 
