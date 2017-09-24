@@ -17,15 +17,33 @@ namespace DataBridge.Runtime
             }
         }
 
-        public DataBridgeInfo LoadDataBridgeinDirectory(string configDirectory)
+        public string ConfigFolderName
+        {
+            get
+            {
+                return "Configs";
+            }
+        }
+
+        public DataBridgeInfo LoadDataBridgeInDirectory(string configDirectory, bool createNewWhenNotExist = false)
         {
             if (string.IsNullOrEmpty(configDirectory))
             {
                 return null;
             }
 
+            DataBridgeInfo currentDataBridgeInfo = null;
+
             var path = Path.Combine(configDirectory, this.ConfigName);
-            var currentDataBridgeInfo = DataBridgeManager.Instance.LoadDataBridge(path);
+            if (createNewWhenNotExist)
+            {
+                currentDataBridgeInfo = LoadOrCreateNewDataBridge(path);
+            }
+            else
+            {
+                currentDataBridgeInfo = LoadDataBridge(path);
+            }
+
             return currentDataBridgeInfo;
         }
 

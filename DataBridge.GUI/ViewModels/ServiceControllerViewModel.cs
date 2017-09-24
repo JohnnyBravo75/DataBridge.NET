@@ -34,7 +34,6 @@ namespace DataBridge.GUI.ViewModels
 
         // ************************************Properties**********************************************
 
-
         public ServiceController CurrentService
         {
             get { return this.currentService; }
@@ -49,7 +48,7 @@ namespace DataBridge.GUI.ViewModels
 
                     if (this.currentService != null)
                     {
-                        this.CurrentDataBridgeInfo = DataBridgeManager.Instance.LoadDataBridgeinDirectory(this.ConfigDirectory);
+                        this.CurrentDataBridgeInfo = DataBridgeManager.Instance.LoadDataBridgeInDirectory(this.ConfigDirectory, true);
                     }
                 }
             }
@@ -74,6 +73,8 @@ namespace DataBridge.GUI.ViewModels
                     item.Properties.AddOrUpdate("LastLogWriteTime", File.Exists(logPathComplete)
                                                                               ? (DateTime?)File.GetLastWriteTime(logPathComplete)
                                                                               : null);
+
+                    item.Properties.AddOrUpdate("Exists", File.Exists(item.FileName));
                 }
 
                 return this.CurrentDataBridgeInfo.PipelineInfos;
@@ -237,7 +238,7 @@ namespace DataBridge.GUI.ViewModels
                 {
                     return string.Empty;
                 }
-                return Path.Combine(this.CurrentService.ServiceDirectory, "Configs");
+                return Path.Combine(this.CurrentService.ServiceDirectory, DataBridgeManager.Instance.ConfigFolderName);
             }
         }
 
@@ -249,7 +250,7 @@ namespace DataBridge.GUI.ViewModels
             {
                 return null;
             }
-            return DataBridgeManager.Instance.LoadDataBridgeinDirectory(configDirectory);
+            return DataBridgeManager.Instance.LoadDataBridgeInDirectory(configDirectory);
         }
 
         private void HandleStart()

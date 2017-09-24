@@ -45,7 +45,7 @@ namespace DataBridge.Runtime
 
         public string ConfigPath
         {
-            get { return Path.Combine(Environment.CurrentDirectory, "Configs"); }
+            get { return Path.Combine(Environment.CurrentDirectory, DataBridgeManager.Instance.ConfigFolderName); }
         }
 
         public string PlugInPath

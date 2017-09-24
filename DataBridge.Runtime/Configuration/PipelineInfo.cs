@@ -33,7 +33,7 @@ namespace DataBridge.Runtime
             {
                 if (string.IsNullOrEmpty(this.name))
                 {
-                    return System.IO.Path.GetFileNameWithoutExtension(this.FileName);
+                    return Path.GetFileNameWithoutExtension(this.FileName);
                 }
 
                 return this.name;
@@ -46,7 +46,7 @@ namespace DataBridge.Runtime
 
         public void SetDefaultValues()
         {
-            this.FileName = Path.Combine(Environment.CurrentDirectory, "pipeline.config");
+            this.FileName = Path.Combine(Environment.CurrentDirectory, DataBridgeManager.Instance.ConfigFolderName, "pipeline.config");
         }
 
         [XmlIgnore]
