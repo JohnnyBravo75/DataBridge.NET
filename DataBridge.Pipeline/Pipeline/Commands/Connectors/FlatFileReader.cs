@@ -15,6 +15,7 @@ namespace DataBridge.Commands
             this.Parameters.Add(new CommandParameter() { Name = "File", Direction = Directions.InOut, NotNull = true });
             this.Parameters.Add(new CommandParameter() { Name = "EncodingName", Direction = Directions.In });
             this.Parameters.Add(new CommandParameter() { Name = "Data", Direction = Directions.InOut });
+            this.Parameters.Add(new CommandParameter() { Name = "FileTemplate", Direction = Directions.In });
         }
 
         [XmlIgnore]
@@ -29,6 +30,13 @@ namespace DataBridge.Commands
         {
             get { return this.Parameters.GetValue<string>("File"); }
             set { this.Parameters.SetOrAddValue("File", value); }
+        }
+
+        [XmlIgnore]
+        public string FileTemplate
+        {
+            get { return this.Parameters.GetValue<string>("FileTemplate"); }
+            set { this.Parameters.SetOrAddValue("FileTemplate", value); }
         }
 
         [XmlIgnore]
@@ -49,6 +57,13 @@ namespace DataBridge.Commands
             //inParameters = GetCurrentInParameters();
             string file = inParameters.GetValue<string>("File");
             string encodingName = inParameters.GetValue<string>("EncodingName");
+            string fileTemplate = inParameters.GetValue<string>("FileTemplate");
+
+            if (!string.IsNullOrEmpty(fileTemplate))
+            {
+                var tokenValues = TokenProcessor.ParseTokenValues(file, fileTemplate);
+                this.SetTokens(tokenValues);
+            }
 
             if (string.IsNullOrEmpty(encodingName))
             {

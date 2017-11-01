@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using DataBridge.Extensions;
 
@@ -17,6 +18,8 @@ namespace DataBridge
 
         public static bool ReplaceTokens(string str, IDictionary<string, object> parameters, out string replacedStr)
         {
+            // perhaps better way: https://stackoverflow.com/questions/733378/whats-a-good-way-of-doing-string-templating-in-net
+
             replacedStr = str;
             bool wasReplaced = false;
 
@@ -57,6 +60,68 @@ namespace DataBridge
             };
 
             return ReplaceTokens(str, dict);
+        }
+
+        /// <summary>
+        /// Parses the token values out of a string
+        /// </summary>
+        /// <param name="str">The string e.g. PREF_LongNameWithSomething_1234.txt</param>
+        /// <param name="template">The template e.g. PREF_LongName{SubName}_{Number}.{Ext}</param>
+        /// <returns></returns>
+        public static IDictionary<string, object> ParseTokenValues(string str, string template)
+        {
+            var tokenValues = new Dictionary<string, object>();
+            if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(template))
+            {
+                return tokenValues;
+            }
+
+            var tokenNames = ParseTokens(template);
+
+            // convert string template into regex for parsing
+            string templateRegex = template;
+
+            foreach (var tokenName in tokenNames)
+            {
+                // PREF_LongName{SubName}_{Number}.{Ext}
+                // PREF_LongName(?<SubName>[\w\[\]]+)_(?<Number>[\w\[\]]+).(?<Ext>[\w\[\]]+)
+                templateRegex = templateRegex.Replace("{" + tokenName + "}", @"(?<" + tokenName + @">[\w\[\]]+)");
+            }
+
+            var regex = new Regex(templateRegex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            Match match = regex.Match(str);
+
+            if (match.Success)
+            {
+                foreach (string groupName in regex.GetGroupNames())
+                {
+                    if (tokenNames.Contains(groupName))
+                    {
+                        tokenValues.AddOrUpdate(groupName, match.Groups[groupName].Value);
+                    }
+                }
+            }
+
+            return tokenValues;
+        }
+
+        public static IList<string> ParseTokens(string str)
+        {
+            var tokens = new List<string>();
+
+            var regex = new Regex(@"(?<start>\" + "{" + @")+(?<name>[\w\.\[\]]+)(?<end>\" + "}" + @")+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+            var matches = regex.Matches(str);
+            foreach (Match match in matches)
+            {
+                Group startGroup = match.Groups["start"];
+                Group propertyGroup = match.Groups["name"];
+                Group endGroup = match.Groups["end"];
+
+                tokens.Add(propertyGroup.Value);
+            }
+
+            return tokens;
         }
 
         private static List<string> dateFormats = null;

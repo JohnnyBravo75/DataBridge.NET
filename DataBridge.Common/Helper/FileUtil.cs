@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.VisualBasic.FileIO;
 
 namespace DataBridge.Common.Helper
@@ -446,10 +445,12 @@ namespace DataBridge.Common.Helper
         }
 
         /// <summary>
-        ///   Kopiert ein Verzeichnis mit allen Unterverzeichnissen und Daten
+        /// Kopiert ein Verzeichnis mit allen Unterverzeichnissen und Daten
         /// </summary>
         /// <param name="directorySource">Quellverzeichis</param>
         /// <param name="directoryTarget">Zielverzeichnis</param>
+        /// <param name="overwrite">if set to <c>true</c> [overwrite].</param>
+        /// <returns></returns>
         public static int CopyDirectory(string directorySource, string directoryTarget, bool overwrite)
         {
             // alle zu Kopierenden Unterverzeichnisse ermitteln
@@ -461,7 +462,7 @@ namespace DataBridge.Common.Helper
                 StringBuilder newTargetPath = new StringBuilder();
                 {
                     newTargetPath.Append(directoryTarget);
-                    newTargetPath.Append(directorySource.Substring(directorySource.LastIndexOf(@"\")));
+                    newTargetPath.Append(directorySource.Substring(directorySource.LastIndexOf(@"\", StringComparison.Ordinal)));
                 }
 
                 // pruefen ob der aktuelle Ordner bereist Existiert (wenn nicht anlegen)
@@ -476,7 +477,7 @@ namespace DataBridge.Common.Helper
                     string newDirectoryPath = subDirectory;
 
                     // Backslash an letzter stelle Abschneiden
-                    if (newDirectoryPath.LastIndexOf(@"\") == (newDirectoryPath.Length - 1))
+                    if (newDirectoryPath.LastIndexOf(@"\", StringComparison.Ordinal) == (newDirectoryPath.Length - 1))
                     {
                         newDirectoryPath = newDirectoryPath.Substring(0, newDirectoryPath.Length - 1);
                     }
@@ -494,10 +495,10 @@ namespace DataBridge.Common.Helper
                     StringBuilder fileTarget = new StringBuilder();
                     {
                         fileTarget.Append(newTargetPath);
-                        fileTarget.Append(fileSource.Substring(fileSource.LastIndexOf(@"\")));
+                        fileTarget.Append(fileSource.Substring(fileSource.LastIndexOf(@"\", StringComparison.Ordinal)));
                     }
 
-                    System.IO.File.Copy(fileSource, fileTarget.ToString(), overwrite);
+                    File.Copy(fileSource, fileTarget.ToString(), overwrite);
                     files = files + 1;
                 }
 

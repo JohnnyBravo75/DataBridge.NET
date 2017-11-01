@@ -83,51 +83,53 @@ namespace DataBridge.Services
         private DbCommand BuildUpdateCommand(DataTable table)
         {
             var cmd = this.DbProviderFactory.CreateCommand();
-
-            var columns = "";
-            foreach (DataColumn column in table.Columns)
+            if (cmd != null)
             {
-                if (table.PrimaryKey.Contains(column))
+                var columns = "";
+                foreach (DataColumn column in table.Columns)
                 {
-                    continue;
+                    if (table.PrimaryKey.Contains(column))
+                    {
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(columns))
+                    {
+                        columns += Environment.NewLine + ",";
+                    }
+
+                    columns += column.ColumnName + "=?";
+
+                    var param = cmd.CreateParameter();
+                    param.DbType = this.MapToDbType(column.DataType);
+                    param.ParameterName = column.ColumnName;
+                    param.SourceColumn = column.ColumnName;
+                    cmd.Parameters.Add(cmd.CreateParameter());
                 }
 
-                if (!string.IsNullOrEmpty(columns))
+                var where = "";
+                var i = 0;
+                foreach (var column in table.PrimaryKey)
                 {
-                    columns += Environment.NewLine + ",";
+                    if (!string.IsNullOrEmpty(columns) && i > 1)
+                    {
+                        where += Environment.NewLine + " AND ";
+                    }
+
+                    where += column.ColumnName + "=?";
+
+                    var param = cmd.CreateParameter();
+                    param.DbType = this.MapToDbType(column.DataType);
+                    param.ParameterName = column.ColumnName;
+                    param.SourceColumn = column.ColumnName;
+                    cmd.Parameters.Add(cmd.CreateParameter());
+                    i++;
                 }
 
-                columns += column.ColumnName + "=?";
-
-                var param = cmd.CreateParameter();
-                param.DbType = this.MapToDbType(column.DataType);
-                param.ParameterName = column.ColumnName;
-                param.SourceColumn = column.ColumnName;
-                cmd.Parameters.Add(cmd.CreateParameter());
+                cmd.CommandText = "UPDATE " + this.QuoteIdentifier(table.TableName) + Environment.NewLine +
+                                 " SET " + columns + Environment.NewLine +
+                                 " WHERE " + where;
             }
-
-            var where = "";
-            var i = 0;
-            foreach (var column in table.PrimaryKey)
-            {
-                if (!string.IsNullOrEmpty(columns) && i > 1)
-                {
-                    where += Environment.NewLine + " AND ";
-                }
-
-                where += column.ColumnName + "=?";
-
-                var param = cmd.CreateParameter();
-                param.DbType = this.MapToDbType(column.DataType);
-                param.ParameterName = column.ColumnName;
-                param.SourceColumn = column.ColumnName;
-                cmd.Parameters.Add(cmd.CreateParameter());
-                i++;
-            }
-
-            cmd.CommandText = "UPDATE " + this.QuoteIdentifier(table.TableName) + Environment.NewLine +
-                             " SET " + columns + Environment.NewLine +
-                             " WHERE " + where;
 
             return cmd;
         }
@@ -297,9 +299,11 @@ namespace DataBridge.Services
             object value = "";
 
             var builder = this.DbProviderFactory.CreateConnectionStringBuilder();
-            builder.ConnectionString = this.ConnectionInfo.ConnectionString;
-            builder.TryGetValue(key, out value);
-
+            if (builder != null)
+            {
+                builder.ConnectionString = this.ConnectionInfo.ConnectionString;
+                builder.TryGetValue(key, out value);
+            }
             return value.ToStringOrEmpty();
         }
 
