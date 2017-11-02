@@ -505,6 +505,11 @@ namespace DataBridge.Services
 
         private string ExtractErrorMessage(XmlDocument responseDoc, string requestXml)
         {
+            if (responseDoc == null || responseDoc.DocumentElement == null)
+            {
+                return string.Empty;
+            }
+
             //string errorMsg = responseDoc.DocumentElement.SelectSingleNode("/soap:Fault/faultstring", nsMgr).InnerText;
             var errorMsg = responseDoc.DocumentElement.InnerText;
             if (!string.IsNullOrEmpty(errorMsg))
@@ -518,6 +523,11 @@ namespace DataBridge.Services
         private XmlNode ExtractSoapResponse(XmlDocument xmlDoc)
         {
             XmlNode root = xmlDoc.DocumentElement;
+            if (root == null)
+            {
+                return null;
+            }
+
             var nsMgr = new XmlNamespaceManager(xmlDoc.NameTable);
             nsMgr.AddNamespace("soap", this.SoapNamespace);
 

@@ -113,24 +113,36 @@
             if (this.TimeOutInSeconds > 0)
             {
                 var timeOutProperty = serviceClass.GetType().GetProperty("Timeout");
-                timeOutProperty.SetValue(serviceClass, this.TimeOutInSeconds, null);
+                if (timeOutProperty != null)
+                {
+                    timeOutProperty.SetValue(serviceClass, this.TimeOutInSeconds, null);
+                }
             }
 
             // Login
             if (this.LoginCredential != null)
             {
                 var defaultCredentialsProperty = serviceClass.GetType().GetProperty("UseDefaultCredentials");
-                defaultCredentialsProperty.SetValue(serviceClass, false, null);
+                if (defaultCredentialsProperty != null)
+                {
+                    defaultCredentialsProperty.SetValue(serviceClass, false, null);
+                }
 
                 var credentialsProperty = serviceClass.GetType().GetProperty("Credentials");
-                credentialsProperty.SetValue(serviceClass, this.LoginCredential, null);
+                if (credentialsProperty != null)
+                {
+                    credentialsProperty.SetValue(serviceClass, this.LoginCredential, null);
+                }
             }
 
             // Proxy
             if (this.Proxy != null)
             {
                 var proxyProperty = serviceClass.GetType().GetProperty("Proxy");
-                proxyProperty.SetValue(serviceClass, this.Proxy, null);
+                if (proxyProperty != null)
+                {
+                    proxyProperty.SetValue(serviceClass, this.Proxy, null);
+                }
             }
 
             // Invoke
@@ -156,6 +168,7 @@
         public void Dispose()
         {
             this.proxyAssembly = null;
+
             if (this.serviceClasses != null)
             {
                 this.serviceClasses.Clear();
@@ -251,65 +264,68 @@
                 }
 
                 // Connect To the web service and read wsdl
-                var wsdlStream = webClient.OpenRead(wsdlUrl);
-
-                if (wsdlStream == null)
+                using (var wsdlStream = webClient.OpenRead(wsdlUrl))
                 {
-                    return null;
-                }
-
-                // Now read the WSDL file describing a service.
-                var description = ServiceDescription.Read(wsdlStream);
-
-                // Initialize a service description importer.
-                var serviceImporter = new ServiceDescriptionImporter();
-                serviceImporter.ProtocolName = "Soap";
-                serviceImporter.AddServiceDescription(description, null, null);
-
-                // Download any imported schemas (ie. WCF generated WSDL)
-                foreach (XmlSchema wsdlSchema in description.Types.Schemas)
-                {
-                    // Loop through all detected imports in the main schema
-                    foreach (var externalSchema in wsdlSchema.Includes)
+                    if (wsdlStream == null)
                     {
-                        // Read each external schema into a schema object and add to importer
-                        if (externalSchema is XmlSchemaImport)
-                        {
-                            var baseUri = new Uri(wsdlUrl);
-                            var schemaUri = new Uri(baseUri, ((XmlSchemaExternal)externalSchema).SchemaLocation);
+                        return null;
+                    }
 
-                            var schemaStream = webClient.OpenRead(schemaUri);
-                            if (schemaStream != null)
+                    // Now read the WSDL file describing a service.
+                    var description = ServiceDescription.Read(wsdlStream);
+
+                    // Initialize a service description importer.
+                    var serviceImporter = new ServiceDescriptionImporter();
+                    serviceImporter.ProtocolName = "Soap";
+                    serviceImporter.AddServiceDescription(description, null, null);
+
+                    // Download any imported schemas (ie. WCF generated WSDL)
+                    foreach (XmlSchema wsdlSchema in description.Types.Schemas)
+                    {
+                        // Loop through all detected imports in the main schema
+                        foreach (var externalSchema in wsdlSchema.Includes)
+                        {
+                            // Read each external schema into a schema object and add to importer
+                            if (externalSchema is XmlSchemaImport)
                             {
-                                var schema = XmlSchema.Read(schemaStream, null);
-                                serviceImporter.Schemas.Add(schema);
+                                var baseUri = new Uri(wsdlUrl);
+                                var schemaUri = new Uri(baseUri, ((XmlSchemaExternal)externalSchema).SchemaLocation);
+
+                                var schemaStream = webClient.OpenRead(schemaUri);
+                                if (schemaStream != null)
+                                {
+                                    var schema = XmlSchema.Read(schemaStream, null);
+                                    serviceImporter.Schemas.Add(schema);
+                                }
                             }
                         }
                     }
-                }
 
-                // get additional wsdl definitions from the imports
-                // e.g. <wsdl:import namespace="http://www.companyx.com/ns/Billing/externalWsdl" location="http://xsrvr/BillingWebServices/PremiumBill/AccountHistory.asmx?wsdl=wsdl1"/>
-                foreach (Import import in description.Imports)
-                {
-                    var baseUri = new Uri(wsdlUrl);
-                    var importUri = new Uri(baseUri, import.Location);
-
-                    var importWsdlStream = webClient.OpenRead(importUri);
-                    if (importWsdlStream != null)
+                    // get additional wsdl definitions from the imports
+                    // e.g. <wsdl:import namespace="http://www.companyx.com/ns/Billing/externalWsdl" location="http://xsrvr/BillingWebServices/PremiumBill/AccountHistory.asmx?wsdl=wsdl1"/>
+                    foreach (Import import in description.Imports)
                     {
-                        var importDescription = ServiceDescription.Read(importWsdlStream);
-                        serviceImporter.AddServiceDescription(importDescription, null, null);
+                        var baseUri = new Uri(wsdlUrl);
+                        var importUri = new Uri(baseUri, import.Location);
+
+                        using (var importWsdlStream = webClient.OpenRead(importUri))
+                        {
+                            if (importWsdlStream != null)
+                            {
+                                var importDescription = ServiceDescription.Read(importWsdlStream);
+                                serviceImporter.AddServiceDescription(importDescription, null, null);
+                            }
+                        }
                     }
+
+                    // Generate a proxy client.
+                    serviceImporter.Style = ServiceDescriptionImportStyle.Client;
+
+                    // Generate properties to represent primitive values.
+                    serviceImporter.CodeGenerationOptions = CodeGenerationOptions.GenerateProperties;
+
+                    return serviceImporter;
                 }
-
-                // Generate a proxy client.
-                serviceImporter.Style = ServiceDescriptionImportStyle.Client;
-
-                // Generate properties to represent primitive values.
-                serviceImporter.CodeGenerationOptions = CodeGenerationOptions.GenerateProperties;
-
-                return serviceImporter;
             }
         }
 
@@ -579,7 +595,7 @@
             var parameter = this.GetParameters(methodName).FirstOrDefault(x => x.Name == parameterName);
             if (parameter == null)
             {
-                throw new Exception(string.Format("The parameter '{0}' was not found.", parameterName));
+                throw new ArgumentException(string.Format("The parameter '{0}' was not found.", parameterName));
             }
 
             return parameter.ParameterType;
@@ -590,7 +606,7 @@
             var parameter = this.GetParameters(methodName).FirstOrDefault(x => x.Name == parameterName);
             if (parameter == null)
             {
-                throw new Exception(string.Format("The parameter '{0}' was not found.", parameterName));
+                throw new ArgumentException(string.Format("The parameter '{0}' was not found.", parameterName));
             }
 
             return parameter.IsOut;
@@ -602,7 +618,7 @@
 
             if (parameter == null)
             {
-                throw new Exception(string.Format("The parameter '{0}' was not found.", parameterName));
+                throw new ArgumentException(string.Format("The parameter '{0}' was not found.", parameterName));
             }
 
             return !parameter.IsOut;

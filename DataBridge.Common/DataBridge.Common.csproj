@@ -78,7 +78,7 @@
     <Compile Include="Helper\CallerHelper.cs" />
     <Compile Include="Helper\DateTimeUtil.cs" />
     <Compile Include="Helper\EnumHelper.cs" />
-    <Compile Include="Helper\CookieAwareWebClient.cs">
+    <Compile Include="Helper\ExtendedWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Helper\CryptoUtil.cs" />

@@ -1,6 +1,4 @@
-﻿using DataBridge.Extensions;
-
-namespace DataBridge.Services
+﻿namespace DataBridge.Services
 {
     using System;
     using System.Collections.Specialized;
@@ -9,11 +7,11 @@ namespace DataBridge.Services
     using System.Text;
     using System.Web;
     using DataBridge.Helper;
+    using DataBridge.Extensions;
 
     public class SimpleWebRequest : IDisposable
     {
-        private CookieAwareWebClient webClient = new CookieAwareWebClient();
-
+        private ExtendedWebClient webClient = new ExtendedWebClient();
         private NetworkCredential credentials;
         private RequestModes requestMode = RequestModes.GET;
         private NameValueCollection parameters = new NameValueCollection();
@@ -154,17 +152,21 @@ namespace DataBridge.Services
                 url += this.ToQueryString(requestParams);
             }
 
-            Uri address = new Uri(url);
+            var address = new Uri(url);
 
             // send
             switch (requestMode)
             {
                 case RequestModes.GET:
-                    Stream responseStream = this.webClient.OpenRead(address);
-
-                    if (responseStream != null)
+                    using (Stream responseStream = this.webClient.OpenRead(address))
                     {
-                        result = new StreamReader(responseStream, this.RequestEncoding).ReadToEnd();
+                        if (responseStream != null)
+                        {
+                            using (var reader = new StreamReader(responseStream, this.RequestEncoding))
+                            {
+                                result = reader.ReadToEnd();
+                            }
+                        }
                     }
 
                     break;
