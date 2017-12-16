@@ -294,15 +294,10 @@ namespace DataBridge.GUI.Core.View
                         (window as IDisposable).Dispose();
                     }
 
-                    //((DMFWindow)dialog).Content = null;
+                    //((WPFWindow)dialog).Content = null;
                     window.CloseAction = null;
 
                     window = null;
-
-                    // Müll einsammeln
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                    GC.Collect();
 
                     if (closeException != null)
                     {

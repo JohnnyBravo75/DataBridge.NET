@@ -171,7 +171,7 @@ namespace DataBridge.Runtime
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            LogManager.Instance.LogNamedErrorFormat(this.Name, this.GetType(), "## EXCEPTION: Unhandeled exception in DataBridge: '{0}'", e.ExceptionObject.ToString());
+            LogManager.Instance.LogNamedErrorFormat(this.Name, this.GetType(), "## EXCEPTION: Unhandeled exception in {1}: '{0}'", e.ExceptionObject.ToString(), this.Name);
         }
 
         private void CurrentDomain_ProcessExit(object sender, EventArgs e)
