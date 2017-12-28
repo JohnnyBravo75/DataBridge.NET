@@ -1,25 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Reflection;
-using DataBridge.ConnectionInfos;
-using DataBridge.Extensions;
-using DataBridge.Helper;
-
-namespace DataBridge.Services
+﻿namespace DataBridge.Handler.Services.Adapter
 {
-    public class DbAdapter : IDbAdapter
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Data.Common;
+    using System.Linq;
+    using System.Reflection;
+    using System.Xml.Serialization;
+    using DataBridge.ConnectionInfos;
+    using DataBridge.Extensions;
+    using DataBridge.Helper;
+
+    [Serializable]
+    public class DbAdapter : DataAdapterBase, IDbAdapter
     {
         private DbConnection connection;
-
         private string tableName = "";
-
         private DbDataAdapter sqlDataAdapter;
-
         private DbConnectionInfoBase connectionInfo;
 
+        [XmlIgnore]
+        protected virtual string QuotePrefix { get; set; }
+
+        [XmlIgnore]
+        protected virtual string QuoteSuffix { get; set; }
+
+        [XmlAttribute]
+        public int CommandTimeout { get; set; }
+
+        [XmlElement]
         public DbConnectionInfoBase ConnectionInfo
         {
             get
@@ -32,18 +41,21 @@ namespace DataBridge.Services
             }
         }
 
+        [XmlAttribute]
         public string TableName
         {
             get { return this.tableName; }
             set { this.tableName = value; }
         }
 
+        [XmlIgnore]
         public DbConnection Connection
         {
             get { return this.connection; }
             set { this.connection = value; }
         }
 
+        [XmlIgnore]
         public DbProviderFactory DbProviderFactory
         {
             get
@@ -68,6 +80,11 @@ namespace DataBridge.Services
         private void SaveDataTable(DataSet dataSet, DataTable table)
         {
             var sqlBuilder = this.DbProviderFactory.CreateCommandBuilder();
+            if (sqlBuilder == null)
+            {
+                throw new ArgumentNullException("sqlBuilder");
+            }
+
             sqlBuilder.DataAdapter = this.sqlDataAdapter;
 
             this.sqlDataAdapter.InsertCommand = sqlBuilder.GetInsertCommand(true);
@@ -76,6 +93,7 @@ namespace DataBridge.Services
             {
                 this.sqlDataAdapter.UpdateCommand = sqlBuilder.GetUpdateCommand(true);
             }
+
             //sqlDataAdapter.UpdateCommand = BuildUpdateCommand(table);
             this.sqlDataAdapter.Update(dataSet, table.TableName);
         }
@@ -83,53 +101,55 @@ namespace DataBridge.Services
         private DbCommand BuildUpdateCommand(DataTable table)
         {
             var cmd = this.DbProviderFactory.CreateCommand();
-            if (cmd != null)
+            if (cmd == null)
             {
-                var columns = "";
-                foreach (DataColumn column in table.Columns)
-                {
-                    if (table.PrimaryKey.Contains(column))
-                    {
-                        continue;
-                    }
-
-                    if (!string.IsNullOrEmpty(columns))
-                    {
-                        columns += Environment.NewLine + ",";
-                    }
-
-                    columns += column.ColumnName + "=?";
-
-                    var param = cmd.CreateParameter();
-                    param.DbType = this.MapToDbType(column.DataType);
-                    param.ParameterName = column.ColumnName;
-                    param.SourceColumn = column.ColumnName;
-                    cmd.Parameters.Add(cmd.CreateParameter());
-                }
-
-                var where = "";
-                var i = 0;
-                foreach (var column in table.PrimaryKey)
-                {
-                    if (!string.IsNullOrEmpty(columns) && i > 1)
-                    {
-                        where += Environment.NewLine + " AND ";
-                    }
-
-                    where += column.ColumnName + "=?";
-
-                    var param = cmd.CreateParameter();
-                    param.DbType = this.MapToDbType(column.DataType);
-                    param.ParameterName = column.ColumnName;
-                    param.SourceColumn = column.ColumnName;
-                    cmd.Parameters.Add(cmd.CreateParameter());
-                    i++;
-                }
-
-                cmd.CommandText = "UPDATE " + this.QuoteIdentifier(table.TableName) + Environment.NewLine +
-                                 " SET " + columns + Environment.NewLine +
-                                 " WHERE " + where;
+                return null;
             }
+
+            var columns = "";
+            foreach (DataColumn column in table.Columns)
+            {
+                if (table.PrimaryKey.Contains(column))
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(columns))
+                {
+                    columns += Environment.NewLine + ",";
+                }
+
+                columns += column.ColumnName + "=?";
+
+                var param = cmd.CreateParameter();
+                param.DbType = this.MapToDbType(column.DataType);
+                param.ParameterName = column.ColumnName;
+                param.SourceColumn = column.ColumnName;
+                cmd.Parameters.Add(param);
+            }
+
+            var where = "";
+            var i = 0;
+            foreach (var column in table.PrimaryKey)
+            {
+                if (!string.IsNullOrEmpty(columns) && i > 1)
+                {
+                    where += Environment.NewLine + " AND ";
+                }
+
+                where += column.ColumnName + "=?";
+
+                var param = cmd.CreateParameter();
+                param.DbType = this.MapToDbType(column.DataType);
+                param.ParameterName = column.ColumnName;
+                param.SourceColumn = column.ColumnName;
+                cmd.Parameters.Add(param);
+                i++;
+            }
+
+            cmd.CommandText = "UPDATE " + this.QuoteIdentifier(table.TableName) + Environment.NewLine +
+                             " SET " + columns + Environment.NewLine +
+                             " WHERE " + where;
 
             return cmd;
         }
@@ -220,10 +240,14 @@ namespace DataBridge.Services
             {
                 using (var connection = this.DbProviderFactory.CreateConnection())
                 {
-                    connection.ConnectionString = this.ConnectionInfo.ConnectionString;
+                    if (connection != null)
+                    {
+                        connection.ConnectionString = this.ConnectionInfo.ConnectionString;
 
-                    connection.Open();
-                    connection.Close();
+                        connection.Open();
+                        connection.Close();
+                    }
+
                     return string.Empty;
                 }
             }
@@ -233,7 +257,7 @@ namespace DataBridge.Services
             }
         }
 
-        public bool Connect()
+        public virtual bool Connect()
         {
             this.Disconnect();
 
@@ -250,9 +274,12 @@ namespace DataBridge.Services
                 }
 
                 this.Connection = this.DbProviderFactory.CreateConnection();
-                this.Connection.ConnectionString = this.ConnectionInfo.ConnectionString;
 
-                this.Connection.Open();
+                if (this.Connection != null)
+                {
+                    this.Connection.ConnectionString = this.ConnectionInfo.ConnectionString;
+                    this.Connection.Open();
+                }
             }
             catch (Exception ex)
             {
@@ -265,7 +292,7 @@ namespace DataBridge.Services
             return this.Connection != null;
         }
 
-        public bool Disconnect()
+        public virtual bool Disconnect()
         {
             if (this.Connection != null && this.Connection.State != ConnectionState.Closed)
             {
@@ -276,7 +303,7 @@ namespace DataBridge.Services
             return (this.Connection == null);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (this.Connection != null)
             {
@@ -299,39 +326,51 @@ namespace DataBridge.Services
             object value = "";
 
             var builder = this.DbProviderFactory.CreateConnectionStringBuilder();
-            if (builder != null)
+            if (builder == null)
             {
-                builder.ConnectionString = this.ConnectionInfo.ConnectionString;
-                builder.TryGetValue(key, out value);
+                throw new ArgumentNullException("builder", "No provider is found.");
             }
+
+            builder.ConnectionString = this.ConnectionInfo.ConnectionString;
+            builder.TryGetValue(key, out value);
+
             return value.ToStringOrEmpty();
         }
 
-        public IList<string> GetAvailableTables()
+        public override IList<string> GetAvailableTables()
         {
             if (string.IsNullOrEmpty(this.ConnectionInfo.UserName))
             {
-                this.ConnectionInfo.UserName = this.GetConnectionValue("User ID");
+                try
+                {
+                    this.ConnectionInfo.UserName = this.GetConnectionValue("User ID");
+                }
+                catch { }
             }
 
             // restrict to user
             var restrictions = new string[1];
             restrictions[0] = this.ConnectionInfo.UserName.ToUpper();
 
-            // Get list of tables (for user)
-            var userTables = this.Connection.GetSchema("Tables", restrictions);
-
-            // copy to a list
             var userTableList = new List<string>();
-            for (var i = 0; i < userTables.Rows.Count; i++)
+
+            try
             {
-                userTableList.Add(userTables.Rows[i]["TABLE_NAME"].ToString());
+                // Get list of tables (for user)
+                var userTables = this.Connection.GetSchema("Tables", restrictions);
+
+                // copy to a list
+                for (var i = 0; i < userTables.Rows.Count; i++)
+                {
+                    userTableList.Add(userTables.Rows[i]["TABLE_NAME"].ToString());
+                }
             }
+            catch { }
 
             return userTableList;
         }
 
-        public IList<DataColumn> GetAvailableColumns()
+        public override IList<DataColumn> GetAvailableColumns()
         {
             // restrict to tables of the user
             var restrictions = new string[4];
@@ -354,17 +393,35 @@ namespace DataBridge.Services
             return tableColumnList;
         }
 
-        public string QuoteIdentifier(string unquotedIdentifier)
+        public virtual string QuoteIdentifier(string unquotedIdentifier)
         {
+            if (string.IsNullOrEmpty(this.QuotePrefix))
+            {
+                return unquotedIdentifier;
+            }
+
             using (var commandBuilder = this.DbProviderFactory.CreateCommandBuilder())
             {
-                var identifiers = unquotedIdentifier.Split(new string[] { commandBuilder.SchemaSeparator }, StringSplitOptions.RemoveEmptyEntries);
-                return string.Join(commandBuilder.SchemaSeparator, identifiers.ForEach(str => commandBuilder.QuoteIdentifier(str)));
+                commandBuilder.QuotePrefix = this.QuotePrefix;
+                commandBuilder.QuoteSuffix = this.QuoteSuffix;
+                var unquotedIdentifiers = unquotedIdentifier.Split(new string[] { commandBuilder.SchemaSeparator }, StringSplitOptions.RemoveEmptyEntries);
+                var quotedIdentifiers = new List<string>();
+                foreach (var identifier in unquotedIdentifiers)
+                {
+                    quotedIdentifiers.Add(commandBuilder.QuoteIdentifier(unquotedIdentifier));
+                }
+
+                return string.Join(commandBuilder.SchemaSeparator, quotedIdentifiers);
             }
         }
 
-        public bool IsIdentifierQuoted(string unquotedIdentifier)
+        public virtual bool IsIdentifierQuoted(string unquotedIdentifier)
         {
+            if (string.IsNullOrEmpty(this.QuotePrefix))
+            {
+                return false;
+            }
+
             using (var commandBuilder = this.DbProviderFactory.CreateCommandBuilder())
             {
                 if (unquotedIdentifier.StartsWith(commandBuilder.QuotePrefix) && unquotedIdentifier.EndsWith(commandBuilder.QuoteSuffix))
@@ -376,7 +433,7 @@ namespace DataBridge.Services
             }
         }
 
-        public void CreateDataModel(DataSet dataSet, bool withContraints = true)
+        public virtual void CreateDataModel(DataSet dataSet, bool withContraints = true)
         {
             var exisitingTables = this.GetAvailableTables();
 
@@ -405,7 +462,7 @@ namespace DataBridge.Services
                     {
                         if (!string.IsNullOrEmpty(columns))
                         {
-                            columns += Environment.NewLine + ",";
+                            columns += ", ";
                         }
 
                         // maps the internal dataType (e.g. "System.String") to a database type of the adapter (e.g. VARCHAR2(100))
@@ -425,7 +482,7 @@ namespace DataBridge.Services
                         columns = columns.Append(column.ColumnName + " " + dbDataType + " ");
                     }
 
-                    commandText = "CREATE TABLE " + this.QuoteIdentifier(table.TableName) + " (" + columns + ")";
+                    commandText = "CREATE TABLE " + table.TableName + " (" + columns + ")";
                     cmd.CommandText = commandText;
                     cmd.ExecuteNonQuery();
                 }
@@ -437,7 +494,7 @@ namespace DataBridge.Services
             }
             catch (Exception ex)
             {
-                throw new Exception(string.Format("Table '{0}' could not be created. Command='{1}'", this.QuoteIdentifier(table.TableName), commandText), ex);
+                throw new Exception(string.Format("Table '{0}' could not be created. Command='{1}'", table.TableName, commandText), ex);
             }
         }
 
@@ -489,8 +546,16 @@ namespace DataBridge.Services
                 // When no Datatype found, fallback to string
                 internalDataType = "System.String";
             }
+            string dbDataType = string.Empty;
 
-            var dbDataType = this.ConnectionInfo.DataTypeMappings[internalDataType];
+            if (this.ConnectionInfo.DataTypeMappings.ContainsKey(internalDataType))
+            {
+                dbDataType = this.ConnectionInfo.DataTypeMappings[internalDataType];
+            }
+            else
+            {
+                throw new KeyNotFoundException("No Datatype mapping for '" + internalDataType + "'");
+            }
             return dbDataType;
         }
 
@@ -582,7 +647,7 @@ namespace DataBridge.Services
             }
         }
 
-        public IEnumerable<DataTable> ReadData(int? blockSize = null)
+        public override IEnumerable<DataTable> ReadData(int? blockSize = null)
         {
             // no fielddefinitions, take all columns
             var columnList = "*";
@@ -598,13 +663,19 @@ namespace DataBridge.Services
 
             if (string.IsNullOrEmpty(this.TableName))
             {
-                yield return table;
+                yield break;
+            }
+
+            if (!this.IsConnected)
+            {
+                this.Connect();
             }
 
             using (var cmd = this.connection.CreateCommand())
             {
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
+                cmd.CommandTimeout = this.CommandTimeout;
 
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -614,7 +685,7 @@ namespace DataBridge.Services
 
                     if (schemaTable != null)
                     {
-                        // create the columns in the datatable
+                        // first read the defintion of the table to create the columns in the datatable
                         var columnName = "";
                         var primaryKeys = new List<DataColumn>();
                         foreach (DataRow row in schemaTable.Rows)
@@ -646,7 +717,8 @@ namespace DataBridge.Services
                                 column.MaxLength = (int)row["ColumnSize"];
                             }
 
-                            if (schemaTable.Columns.Contains("IsKey") && row["IsKey"] is bool)
+                            // Only not Nullable keys are allowed
+                            if (schemaTable.Columns.Contains("IsKey") && row["IsKey"] is bool && !column.AllowDBNull)
                             {
                                 primaryKeys.Add(column);
                             }
@@ -697,6 +769,7 @@ namespace DataBridge.Services
             {
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
+                cmd.CommandTimeout = this.CommandTimeout;
 
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -753,6 +826,8 @@ namespace DataBridge.Services
                     var sql = string.Format("DROP TABLE {0} ", this.QuoteIdentifier(tableName));
                     cmd.CommandText = sql;
                     cmd.CommandType = CommandType.Text;
+                    cmd.CommandTimeout = this.CommandTimeout;
+
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -774,6 +849,8 @@ namespace DataBridge.Services
                     var sql = string.Format("DELETE FROM {0} ", this.QuoteIdentifier(tableName));
                     cmd.CommandText = sql;
                     cmd.CommandType = CommandType.Text;
+                    cmd.CommandTimeout = this.CommandTimeout;
+
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -785,24 +862,38 @@ namespace DataBridge.Services
             return true;
         }
 
-        public bool WriteData(DataTable table)
+        public override bool WriteData(IEnumerable<DataTable> tables, bool deleteBefore = false)
         {
-            if (!string.IsNullOrEmpty(this.TableName))
+            if (!this.IsConnected)
             {
-                table.TableName = this.TableName;
+                this.Connect();
             }
 
-            if (!this.ExistsTable(table.TableName))
+            using (var cmd = this.connection.CreateCommand())
             {
-                this.CreateTable(table, withContraints: false);
-            }
-
-            // this.DeleteData();
-
-            try
-            {
-                using (var cmd = this.connection.CreateCommand())
+                int tblCount = 0;
+                foreach (DataTable table in tables)
                 {
+                    if (!string.IsNullOrEmpty(this.TableName))
+                    {
+                        table.TableName = this.TableName;
+                    }
+
+                    // check in the first run...
+                    if (tblCount == 0)
+                    {
+                        // create a table when not exists
+                        if (!this.ExistsTable(table.TableName))
+                        {
+                            this.CreateTable(table, withContraints: false);
+                        }
+                        // delete all before
+                        else if (deleteBefore)
+                        {
+                            this.DeleteData();
+                        }
+                    }
+
                     // build the insert
                     cmd.Parameters.Clear();
                     var sqlColumns = "";
@@ -818,23 +909,32 @@ namespace DataBridge.Services
 
                         sqlColumns += this.QuoteIdentifier(columnName);
 
+                        string parameterPrefix = "";
                         switch (this.DbProviderFactory.GetType().Name)
                         {
+                            case "OleDbFactory":
                             case "SqlClientFactory":
-                                sqlValues += "@" + column.ColumnName;
+                                parameterPrefix = "@";
+                                sqlValues += parameterPrefix + column.ColumnName;
                                 break;
 
                             case "OracleClientFactory":
-                                sqlValues += ":" + column.ColumnName;
+                                parameterPrefix = ":";
+                                sqlValues += parameterPrefix + column.ColumnName;
                                 break;
 
-                            case "OleDbFactory":
+                            case "SQLiteFactory":
+                                parameterPrefix = "?";
+                                sqlValues += parameterPrefix;
+                                break;
+
                             case "OdbcFactory":
-                                sqlValues += "?" + column.ColumnName;
+                                parameterPrefix = "?";
+                                sqlValues += parameterPrefix + column.ColumnName;
                                 break;
 
                             default:
-                                sqlValues += "?" + column.ColumnName;
+                                parameterPrefix = "?";
                                 break;
                         }
 
@@ -858,6 +958,7 @@ namespace DataBridge.Services
 
                     cmd.CommandText = sql;
                     cmd.CommandType = CommandType.Text;
+                    cmd.CommandTimeout = this.CommandTimeout;
 
                     foreach (DataRow row in table.Rows)
                     {
@@ -876,17 +977,15 @@ namespace DataBridge.Services
 
                         cmd.ExecuteNonQuery();
                     }
+
+                    tblCount++;
                 }
-            }
-            catch (Exception ex)
-            {
-                throw;
             }
 
             return true;
         }
 
-        public int GetCount()
+        public override int GetCount()
         {
             try
             {
@@ -919,6 +1018,11 @@ namespace DataBridge.Services
             if (this.ConnectionInfo == null)
             {
                 messages.Add("ConnectionInfo must not be empty");
+            }
+
+            if (string.IsNullOrEmpty(this.TableName))
+            {
+                messages.Add("TableName must not be null");
             }
 
             if (this.ConnectionInfo != null)

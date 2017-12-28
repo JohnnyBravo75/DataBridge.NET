@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Xml.Serialization;
+using DataBridge.Common.Services.Adapter;
 using DataBridge.Formatters;
 
 namespace DataBridge.Commands
@@ -69,7 +70,7 @@ namespace DataBridge.Commands
             this.xmlAdapter.XPath = rowXPath;
 
             int rowCount = 0;
-            foreach (var data in this.xmlAdapter.ReadData(this.MaxRowsToRead))
+            foreach (var data in this.xmlAdapter.ReadDataObjects<object>(this.MaxRowsToRead))
             {
                 if (data is DataSet)
                 {

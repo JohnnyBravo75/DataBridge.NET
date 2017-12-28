@@ -76,6 +76,7 @@
     <Compile Include="Extensions\XmlReaderExtensions.cs" />
     <Compile Include="Helper\BulkObservableCollection.cs" />
     <Compile Include="Helper\CallerHelper.cs" />
+    <Compile Include="Helper\CultureUtil.cs" />
     <Compile Include="Helper\DateTimeUtil.cs" />
     <Compile Include="Helper\EnumHelper.cs" />
     <Compile Include="Helper\ExtendedWebClient.cs">

@@ -3,6 +3,7 @@ using System.Data;
 using System.Xml.Serialization;
 using DataBridge.ConnectionInfos;
 using DataBridge.Extensions;
+using DataBridge.Handler.Services.Adapter;
 using DataBridge.Services;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 

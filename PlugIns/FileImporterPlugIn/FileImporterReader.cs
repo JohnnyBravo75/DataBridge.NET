@@ -5,6 +5,7 @@ using System.Xml.Serialization;
 using DataBridge.Common;
 using DataBridge.Extensions;
 using DataBridge.Formatters;
+using DataBridge.Handler.Services.Adapter;
 using DataBridge.Helper;
 
 namespace DataBridge.Commands

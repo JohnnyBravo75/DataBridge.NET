@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using DataBridge.ConnectionInfos;
 using DataBridge.Extensions;
+using DataBridge.Handler.Services.Adapter;
 using DataBridge.Services;
 
 namespace DataBridge.Commands

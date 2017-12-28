@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Xml.Serialization;
+using DataBridge.Common.Services.Adapter;
 using DataBridge.Formatters;
 
 namespace DataBridge.Commands
@@ -69,7 +70,7 @@ namespace DataBridge.Commands
             this.xmlAdapter.FileName = file;
             this.xmlAdapter.XPath = rowXPath;
 
-            this.xmlAdapter.WriteData(table, (this.IsFirstExecution && deleteBefore));
+            this.xmlAdapter.WriteAllData(table, (this.IsFirstExecution && deleteBefore));
 
             this.LogDebug(string.Format("Writing file={0}, Nodes={1}", file, table.Rows.Count));
 

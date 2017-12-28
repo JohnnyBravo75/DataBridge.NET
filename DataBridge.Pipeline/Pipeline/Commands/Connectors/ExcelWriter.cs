@@ -3,6 +3,7 @@ using System.Data;
 using System.IO;
 using System.Xml.Serialization;
 using DataBridge.Common.Helper;
+using DataBridge.Handler.Services.Adapter;
 using DataBridge.Helper;
 
 namespace DataBridge.Commands
@@ -91,7 +92,7 @@ namespace DataBridge.Commands
 
             if (this.excelAdapter.Connect())
             {
-                this.excelAdapter.WriteData(table);
+                this.excelAdapter.WriteAllData(table);
                 this.excelAdapter.Disconnect();
             }
         }

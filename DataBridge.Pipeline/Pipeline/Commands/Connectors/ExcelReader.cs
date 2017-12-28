@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Xml.Serialization;
+using DataBridge.Handler.Services.Adapter;
 
 namespace DataBridge.Commands
 {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 using DataBridge.Formatters;
+using DataBridge.Handler.Services.Adapter;
 using DataBridge.Helper;
 
 namespace DataBridge.Commands
@@ -65,16 +66,16 @@ namespace DataBridge.Commands
                 this.SetTokens(tokenValues);
             }
 
+            this.fileAdapter.FileName = file;
+
             if (string.IsNullOrEmpty(encodingName))
             {
                 this.AutoDetectSettings();
                 encodingName = this.EncodingName;
             }
+            this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
 
             this.LogDebugFormat("Start reading File='{0}'", file);
-
-            this.fileAdapter.FileName = file;
-            this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
 
             int rowCount = 0;
             foreach (var table in this.fileAdapter.ReadData(this.MaxRowsToRead))

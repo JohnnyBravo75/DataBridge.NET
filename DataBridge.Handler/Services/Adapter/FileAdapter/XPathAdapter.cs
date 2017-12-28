@@ -1,20 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.IO;
-using System.Xml;
-using System.Xml.Linq;
-using DataBridge.Extensions;
-using DataBridge.Formatters;
-using DataBridge.Helper;
-using MyXPathReader;
-
-namespace DataBridge
+﻿namespace DataBridge.Handler.Services.Adapter
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Xml;
+    using System.Xml.Linq;
+    using DataBridge.ConnectionInfos;
+    using DataBridge.Extensions;
+    using DataBridge.Formatters;
+    using DataBridge.Helper;
+    using MyXPathReader;
+
     public class XPathAdapter
     {
         private FormatterBase formatter = new XPathToDataTableFormatter();
+        private FileConnectionInfoBase connectionInfo;
+        private string xPath;
+
+        private XPathAdapter()
+        {
+            throw new ArgumentException("Please use XmlAdapter this is not usable at the moment");
+        }
 
         public FormatterBase Formatter
         {
@@ -32,11 +40,32 @@ namespace DataBridge
             return xpath.Trim('/').Split('/');
         }
 
-        public IEnumerable<object> ReadData(string file, string xPath, int maxRowsToRead)
+  
+        public FileConnectionInfoBase ConnectionInfo
+        {
+            get { return this.connectionInfo; }
+            set { this.connectionInfo = value; }
+        }
+
+   
+        public string FileName
+        {
+            get { return (this.ConnectionInfo as FlatFileConnectionInfo).FileName; }
+            set { (this.ConnectionInfo as FlatFileConnectionInfo).FileName = value; }
+        }
+
+
+        public string XPath
+        {
+            get { return this.xPath; }
+            set { this.xPath = value; }
+        }
+
+        public IEnumerable<object> ReadData(string fileName, string xPath, int maxRowsToRead)
         {
             string rowGrouper = "";
 
-            XPathReader xpr = new XPathReader(file, xPath);
+            XPathReader xpr = new XPathReader(fileName, xPath);
 
             while (xpr.ReadUntilMatch())
             {
@@ -44,7 +73,7 @@ namespace DataBridge
                 Debug.WriteLine(xml);
             }
 
-            using (XmlReader xmlReader = XmlReader.Create(file, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore }))
+            using (XmlReader xmlReader = XmlReader.Create(fileName, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore }))
             {
                 foreach (var path in XpathParts(xPath))
                 {
@@ -61,7 +90,7 @@ namespace DataBridge
                 {
                     if (xmlReader.Name.Equals(rowGrouper) && (xmlReader.NodeType == XmlNodeType.Element))
                     {
-                        var rowElement = (XElement)XElement.ReadFrom(xmlReader);
+                        var rowElement = (XElement)XNode.ReadFrom(xmlReader);
                         string xml = rowElement.ToStringOrEmpty();
 
                         if (readedRows == 0)

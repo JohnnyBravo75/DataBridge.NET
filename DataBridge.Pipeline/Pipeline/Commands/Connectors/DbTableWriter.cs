@@ -3,6 +3,7 @@ using System.Data;
 using System.Xml.Serialization;
 using DataBridge.ConnectionInfos;
 using DataBridge.Extensions;
+using DataBridge.Handler.Services.Adapter;
 using DataBridge.Services;
 
 namespace DataBridge.Commands
@@ -96,7 +97,7 @@ namespace DataBridge.Commands
             }
 
             this.LogDebugFormat("Write to table '{0}': Rows={1}", this.dbAdapter.TableName, table.Rows.Count);
-            this.dbAdapter.WriteData(table);
+            this.dbAdapter.WriteAllData(table);
 
             this.dbAdapter.Disconnect();
         }

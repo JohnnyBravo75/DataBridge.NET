@@ -114,8 +114,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Model\DataFieldAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Adapter\Base\DataAdapterBase.cs" />
     <Compile Include="Services\Adapter\DbAdapter\AccessAdapter.cs" />
+    <Compile Include="Services\Converters\Base\ValueConverterBase.cs" />
+    <Compile Include="Services\Converters\Base\ValueConverterFactory.cs" />
+    <Compile Include="Services\Converters\Base\ValueConvertProcessor.cs" />
+    <Compile Include="Services\Converters\DateTimeAutoDetectConverter.cs" />
+    <Compile Include="Services\Converters\DateTimeFormatConverter.cs" />
+    <Compile Include="Services\Converters\Model\ValueConverterAttribute.cs" />
+    <Compile Include="Services\Converters\Model\ValueConverterDefinition.cs" />
+    <Compile Include="Services\Converters\NumberAutoDetectConverter.cs" />
+    <Compile Include="Services\Converters\NumberFormatConverter.cs" />
     <Compile Include="Services\FolderSynchronizer\FtpFolderSynchronizer.cs" />
     <Compile Include="Services\FolderSynchronizer\FileFolderSynchronizer.cs" />
     <Compile Include="Services\FolderSynchronizer\FtpSyncOperations.cs" />
@@ -128,7 +139,7 @@
     <Compile Include="Services\ConnectionInfos\SmtpConnectionInfo.cs" />
     <Compile Include="Services\Adapter\FileAdapter\Excel2007NativeAdapter.cs" />
     <Compile Include="Services\Adapter\FileAdapter\ExcelNativeAdapter.cs" />
-    <Compile Include="Services\Adapter\IDataAdapterBase.cs" />
+    <Compile Include="Services\Adapter\Base\IDataAdapterBase.cs" />
     <Compile Include="Services\Adapter\DbAdapter\DbAdapter.cs" />
     <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\Access2007ConnectionInfo.cs" />
     <Compile Include="Services\Adapter\FileAdapter\ConnectionInfos\FlatFileConnectionInfo.cs" />

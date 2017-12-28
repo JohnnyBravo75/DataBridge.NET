@@ -1,4 +1,6 @@
-﻿namespace DataBridge.Services
+﻿using DataBridge.Handler.Services.Adapter;
+
+namespace DataBridge.Services
 {
     public class OracleNativeDbAdapter : DbAdapter
     {

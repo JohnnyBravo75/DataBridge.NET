@@ -92,7 +92,7 @@ namespace DataBridge.Commands
 
             if (this.accessAdapter.Connect())
             {
-                this.accessAdapter.WriteData(table);
+                this.accessAdapter.WriteAllData(table);
                 this.accessAdapter.Disconnect();
             }
         }

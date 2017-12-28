@@ -57,7 +57,7 @@ namespace DataBridge.Services
             cmd.Notification.IsNotifiedOnce = false;
             cmd.Notification.IsPersistent = true;
             cmd.AddRowid = true;
-            cmd.ExecuteNonQuery();
+            cmd.ExecuteNonQuery(); 
         }
 
         private void Dependency_OnChange(object sender, OracleNotificationEventArgs eventArgs)

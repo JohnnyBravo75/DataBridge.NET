@@ -1,6 +1,4 @@
-﻿using DataBridge.ConnectionInfos;
-
-namespace DataBridge
+﻿namespace DataBridge.Handler.Services.Adapter
 {
     using System;
     using System.Collections.Generic;
@@ -14,8 +12,9 @@ namespace DataBridge
     using NPOI.HPSF;
     using NPOI.HSSF.UserModel;
     using NPOI.SS.UserModel;
+    using DataBridge.ConnectionInfos;
 
-    public class ExcelNativeAdapter : IDataAdapterBase
+    public class ExcelNativeAdapter : DataAdapterBase, IDataAdapterBase
     {
         // ***********************Fields***********************
 
@@ -43,12 +42,21 @@ namespace DataBridge
             this.ConnectionInfo = new ExcelConnectionInfo();
         }
 
+        public ExcelNativeAdapter(string filenName, string sheetName = null) : this()
+        {
+            this.FileName = filenName;
+            this.SheetName = sheetName;
+        }
+
         [XmlElement]
         public FileConnectionInfoBase ConnectionInfo
         {
             get { return this.connectionInfo; }
             set { this.connectionInfo = value; }
         }
+
+        [XmlIgnore]
+        public Stream DataStream { get; set; }
 
         [XmlAttribute]
         public bool ApplyCellStyles
@@ -67,14 +75,28 @@ namespace DataBridge
         [XmlAttribute]
         public string FileName
         {
-            get { return (this.ConnectionInfo as ExcelConnectionInfo).FileName; }
+            get
+            {
+                if (!(this.ConnectionInfo is ExcelConnectionInfo))
+                {
+                    return string.Empty;
+                }
+                return (this.ConnectionInfo as ExcelConnectionInfo).FileName;
+            }
             set { (this.ConnectionInfo as ExcelConnectionInfo).FileName = value; }
         }
 
         [XmlAttribute]
         public string SheetName
         {
-            get { return (this.ConnectionInfo as ExcelConnectionInfo).SheetName; }
+            get
+            {
+                if (!(this.ConnectionInfo is ExcelConnectionInfo))
+                {
+                    return string.Empty;
+                }
+                return (this.ConnectionInfo as ExcelConnectionInfo).SheetName;
+            }
             set { (this.ConnectionInfo as ExcelConnectionInfo).SheetName = value; }
         }
 
@@ -87,16 +109,19 @@ namespace DataBridge
         {
             this.Disconnect();
 
-            try
+            if (string.IsNullOrEmpty(this.FileName) && this.DataStream == null)
             {
-                this.workbook = this.OpenExcelFile(this.FileName);
+                throw new ArgumentNullException("Please provide a DataStream or a FileName.");
             }
-            catch { }
 
-            if (this.workbook != null)
+            this.workbook = this.OpenExcelFile();
+
+            if (this.workbook == null)
             {
-                this.IsConnected = true;
+                throw new ArgumentNullException("Workbook", "The workbook was not found or could not be opened.");
             }
+
+            this.IsConnected = true;
 
             return this.IsConnected;
         }
@@ -125,12 +150,12 @@ namespace DataBridge
             return (this.workbook == null);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             this.Disconnect();
         }
 
-        public IList<DataColumn> GetAvailableColumns()
+        public override IList<DataColumn> GetAvailableColumns()
         {
             var tableColumnList = new List<DataColumn>();
 
@@ -170,7 +195,7 @@ namespace DataBridge
             return tableColumnList;
         }
 
-        public IList<string> GetAvailableTables()
+        public override IList<string> GetAvailableTables()
         {
             IList<string> userTableList = new List<string>();
 
@@ -187,7 +212,7 @@ namespace DataBridge
             return userTableList;
         }
 
-        public int GetCount()
+        public override int GetCount()
         {
             int count = 0;
             if (!this.IsConnected)
@@ -233,8 +258,13 @@ namespace DataBridge
             }
         }
 
-        public IEnumerable<DataTable> ReadData(int? blockSize = null)
+        public override IEnumerable<DataTable> ReadData(int? blockSize = null)
         {
+            if (!this.IsConnected)
+            {
+                this.Connect();
+            }
+
             this.ResetToStart();
 
             bool hasHeader = true;
@@ -244,9 +274,14 @@ namespace DataBridge
             DataTable table = null;
             string tableName = this.SheetName;
 
+            if (string.IsNullOrEmpty(this.SheetName))
+            {
+                throw new ArgumentNullException("SheetName", "Please provide a sheet name");
+            }
+
             if (!this.IsConnected)
             {
-                yield return table;
+                yield break;
             }
 
             // create a new datatable
@@ -255,14 +290,14 @@ namespace DataBridge
 
             if (this.workbook == null)
             {
-                yield return table;
+                yield break;
             }
 
             this.sheet = this.workbook.GetSheet(tableName);
 
             if (this.sheet == null)
             {
-                yield return table;
+                throw new Exception(string.Format("The sheet '{0}' was not found.", this.SheetName));
             }
 
             int rowsRead = 0;
@@ -398,20 +433,15 @@ namespace DataBridge
             tableName = string.IsNullOrEmpty(tableName) ? "Sheet1" : tableName;
             this.sheet = this.workbook.CreateSheet(tableName);
 
-            this.WriteExcelFile(this.FileName, this.workbook);
+            this.WriteExcelFile(this.workbook);
         }
 
-        public bool WriteData(DataTable table)
+        public override bool WriteData(IEnumerable<DataTable> tables, bool deleteBefore = false)
         {
-            return WriteData(table, true);
-        }
-
-        public bool WriteData(DataTable table, bool append)
-        {
-            //if (!this.IsConnected)
-            //{
-            //    return false;
-            //}
+            if (!this.IsConnected)
+            {
+                this.Connect();
+            }
 
             string tableName = this.SheetName;
 
@@ -431,54 +461,59 @@ namespace DataBridge
                 this.sheet = this.workbook.CreateSheet(tableName);
             }
 
-            startY = append ? this.GetCount() : 0;
-            bool hasCreatedHeader = false;
-
-            if (startY == 0)
+            int i = 0;
+            foreach (DataTable table in tables)
             {
-                this.CreateHeaderRow(table, startY);
-                hasCreatedHeader = true;
-            }
+                this.startY = deleteBefore && i == 0 ? 0 : this.GetCount();
 
-            // loop through data
-            for (int y = 0; y < table.Rows.Count; y++)
-            {
-                var excelRow = sheet.GetRow(y + startY + (hasCreatedHeader ? 1 : 0));
+                bool hasCreatedHeader = false;
 
-                if (excelRow == null)
+                if (this.startY == 0)
                 {
-                    excelRow = this.sheet.CreateRow(y + startY + (hasCreatedHeader ? 1 : 0));
+                    this.CreateHeaderRow(table, this.startY);
+                    hasCreatedHeader = true;
                 }
 
-                for (int x = 0; x < table.Columns.Count; x++)
+                // loop through data
+                for (int y = 0; y < table.Rows.Count; y++)
                 {
-                    var excelCell = excelRow.GetCell(x + startX);
+                    var excelRow = this.sheet.GetRow(y + this.startY + (hasCreatedHeader ? 1 : 0));
 
-                    if (excelCell == null)
+                    if (excelRow == null)
                     {
-                        excelCell = excelRow.CreateCell(x + startX);
+                        excelRow = this.sheet.CreateRow(y + this.startY + (hasCreatedHeader ? 1 : 0));
                     }
 
-                    string columnName = table.Columns[x].ToString();
-                    var value = table.Rows[y][columnName];
-
-                    this.SetCellValue(excelCell, value, applyDataType);
-
-                    string dataFormat = "text";
-                    if (this.applyCellStyles)
+                    for (int x = 0; x < table.Columns.Count; x++)
                     {
-                        dataFormat = this.GetDefaultDataFormat(value);
-                    }
+                        var excelCell = excelRow.GetCell(x + this.startX);
 
-                    // find/create cell style
-                    excelCell.CellStyle = this.GetCellStyleForFormat(this.sheet.Workbook, dataFormat);
+                        if (excelCell == null)
+                        {
+                            excelCell = excelRow.CreateCell(x + this.startX);
+                        }
+
+                        string columnName = table.Columns[x].ToString();
+                        var value = table.Rows[y][columnName];
+
+                        this.SetCellValue(excelCell, value, this.applyDataType);
+
+                        string dataFormat = "text";
+                        if (this.applyCellStyles)
+                        {
+                            dataFormat = this.GetDefaultDataFormat(value);
+                        }
+
+                        // find/create cell style
+                        excelCell.CellStyle = this.GetCellStyleForFormat(this.sheet.Workbook, dataFormat);
+                    }
                 }
             }
 
             // Forcing formula recalculation
             this.sheet.ForceFormulaRecalculation = true;
 
-            this.WriteExcelFile(this.FileName, this.workbook);
+            this.WriteExcelFile(this.workbook);
 
             return true;
         }
@@ -493,20 +528,20 @@ namespace DataBridge
                                                 : (CellStyle)null;
 
             // get or create header row
-            var headerRow = this.sheet.GetRow(y + startY);
+            var headerRow = this.sheet.GetRow(y + this.startY);
 
             if (headerRow == null)
             {
-                headerRow = this.sheet.CreateRow(y + startY);
+                headerRow = this.sheet.CreateRow(y + this.startY);
             }
 
             // write all columns
             for (int x = 0; x < table.Columns.Count; x++)
             {
-                Cell cell = headerRow.GetCell(x + startX);
+                Cell cell = headerRow.GetCell(x + this.startX);
                 if (cell == null)
                 {
-                    cell = headerRow.CreateCell(x + startX);
+                    cell = headerRow.CreateCell(x + this.startX);
                 }
 
                 string columnName = table.Columns[x].ToString();
@@ -589,25 +624,39 @@ namespace DataBridge
             return headerLabelCellStyle;
         }
 
-        private HSSFWorkbook OpenExcelFile(string filePath)
+        private HSSFWorkbook OpenExcelFile()
         {
-            HSSFWorkbook hssfworkbookLocal = null;
+            HSSFWorkbook workBook = null;
 
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            if (!string.IsNullOrEmpty(this.FileName))
             {
-                hssfworkbookLocal = new HSSFWorkbook(fileStream);
-                fileStream.Close();
+                using (var fileStream = new FileStream(this.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    workBook = new HSSFWorkbook(fileStream);
+                    fileStream.Close();
+                }
+            }
+            else
+            {
+                workBook = new HSSFWorkbook(this.DataStream);
             }
 
-            return hssfworkbookLocal;
+            return workBook;
         }
 
-        private void WriteExcelFile(string filePath, HSSFWorkbook hssfworkbook)
+        private void WriteExcelFile(HSSFWorkbook workBook)
         {
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
+            if (!string.IsNullOrEmpty(this.FileName))
             {
-                hssfworkbook.Write(fileStream);
-                fileStream.Close();
+                using (var fileStream = new FileStream(this.FileName, FileMode.Create))
+                {
+                    workBook.Write(fileStream);
+                    fileStream.Close();
+                }
+            }
+            else
+            {
+                workBook.Write(this.DataStream);
             }
         }
 

@@ -2,6 +2,7 @@
 using System.Data;
 using System.Xml.Serialization;
 using DataBridge.Formatters;
+using DataBridge.Handler.Services.Adapter;
 using DataBridge.Helper;
 
 namespace DataBridge.Commands
@@ -70,11 +71,11 @@ namespace DataBridge.Commands
 
             if (table != null)
             {
-                this.fileAdapter.WriteData(table, (this.IsFirstExecution && deleteBefore));
+                this.fileAdapter.WriteAllData(table, (this.IsFirstExecution && deleteBefore));
             }
-            else
+            else if (data is byte[])
             {
-                this.fileAdapter.WriteBinaryData(data, (this.IsFirstExecution && deleteBefore));
+                this.fileAdapter.WriteBinaryData(data as byte[], (this.IsFirstExecution && deleteBefore));
             }
 
             var outParameters = this.GetCurrentOutParameters();

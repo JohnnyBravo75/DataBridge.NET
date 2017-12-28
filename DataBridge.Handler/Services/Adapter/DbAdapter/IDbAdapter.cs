@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using DataBridge.Common.Services.Adapter;
 
-namespace DataBridge.Services
+namespace DataBridge.Handler.Services.Adapter
 {
     public interface IDbAdapter : IDataAdapterBase
     {
