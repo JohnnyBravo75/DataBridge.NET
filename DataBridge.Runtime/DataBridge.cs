@@ -131,6 +131,18 @@ namespace DataBridge.Runtime
             return (this.DataBridgeInfo != null);
         }
 
+        public bool Load(Stream stream)
+        {
+            if (stream == null)
+            {
+                return false;
+            }
+
+            this.DataBridgeInfo = DataBridgeManager.Instance.LoadDataBridge(stream);
+
+            return (this.DataBridgeInfo != null);
+        }
+
         public bool Load(string configFileName)
         {
             if (string.IsNullOrEmpty(configFileName))
@@ -141,6 +153,11 @@ namespace DataBridge.Runtime
             this.DataBridgeInfo = DataBridgeManager.Instance.LoadDataBridge(configFileName);
 
             return (this.DataBridgeInfo != null);
+        }
+
+        public void Save(Stream stream)
+        {
+            DataBridgeManager.Instance.SaveDataBridge(stream, this.DataBridgeInfo);
         }
 
         public void Save(string configFileName)
