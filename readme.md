@@ -32,9 +32,13 @@ A pipeline consists of many commands. A pipeline always starts with a trigger.
 * self installing service with failsafe
 * plugin architecture
 * notifications (email)
+* watchdog thread
 
 ## GUI
-* TrayNotifier
+* TrayWindow
+
+    ![](../master/Assets/DataBridge-Tray.png)
+
 * PipelineViewer (edit not implemented yet)
 
 ## Commands

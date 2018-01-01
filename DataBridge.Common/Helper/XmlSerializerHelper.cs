@@ -11,8 +11,6 @@
     {
         private XmlSerializer xmlSerializer;
 
-        public string FileName { get; set; }
-
         private XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
 
         public XmlSerializerHelper()
@@ -24,13 +22,17 @@
             this.xmlSerializer = new XmlSerializer(typeof(T), knownTypes);
         }
 
-        public T Load()
+        public T Load(Stream stream)
+        {
+            return (T)this.xmlSerializer.Deserialize(stream);
+        }
+
+        public T Load(string fileName)
         {
             TextReader reader = null;
-            string path = this.FileName;
             try
             {
-                reader = new StreamReader(path);
+                reader = new StreamReader(fileName);
                 T obj = (T)this.xmlSerializer.Deserialize(reader);
                 return obj;
             }
@@ -48,14 +50,18 @@
             }
         }
 
-        public void Save(T obj)
+        public void Save(Stream stream, T obj)
+        {
+            this.xmlSerializer.Serialize(stream, obj);
+        }
+
+        public void Save(string fileName, T obj)
         {
             TextWriter writer = null;
-            string path = this.FileName;
 
             try
             {
-                writer = new StreamWriter(path);
+                writer = new StreamWriter(fileName);
                 this.xmlSerializer.Serialize(writer, obj);
             }
             catch (Exception ex)

@@ -147,15 +147,13 @@ namespace DataBridge
         public static void Save(string fileName, Pipeline pipeline)
         {
             var serializer = new XmlSerializerHelper<Pipeline>();
-            serializer.FileName = fileName;
-            serializer.Save(pipeline);
+            serializer.Save(fileName, pipeline);
         }
 
         public static Pipeline Load(string fileName)
         {
             var serializer = new XmlSerializerHelper<Pipeline>();
-            serializer.FileName = fileName;
-            var pipeline = serializer.Load();
+            var pipeline = serializer.Load(fileName);
             pipeline.Name = Path.GetFileNameWithoutExtension(fileName);
             foreach (var command in pipeline.Commands)
             {

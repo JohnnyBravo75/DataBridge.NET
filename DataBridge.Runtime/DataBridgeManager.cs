@@ -107,19 +107,30 @@ namespace DataBridge.Runtime
             return pipeline;
         }
 
+        public DataBridgeInfo LoadDataBridge(Stream stream)
+        {
+            var serializer = new XmlSerializerHelper<DataBridgeInfo>();
+            var dataBridgeInfo = serializer.Load(stream);
+            return dataBridgeInfo;
+        }
+
         public DataBridgeInfo LoadDataBridge(string fileName)
         {
             var serializer = new XmlSerializerHelper<DataBridgeInfo>();
-            serializer.FileName = fileName;
-            var dataBridgeInfo = serializer.Load();
+            var dataBridgeInfo = serializer.Load(fileName);
             return dataBridgeInfo;
         }
 
         public void SaveDataBridge(string fileName, DataBridgeInfo dataBridgeInfo)
         {
             var serializer = new XmlSerializerHelper<DataBridgeInfo>();
-            serializer.FileName = fileName;
-            serializer.Save(dataBridgeInfo);
+            serializer.Save(fileName, dataBridgeInfo);
+        }
+
+        public void SaveDataBridge(Stream stream, DataBridgeInfo dataBridgeInfo)
+        {
+            var serializer = new XmlSerializerHelper<DataBridgeInfo>();
+            serializer.Save(stream, dataBridgeInfo);
         }
 
         private Pipeline CreateDefaultPipeline()
