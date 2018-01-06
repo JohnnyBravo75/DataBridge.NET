@@ -130,6 +130,7 @@
     <Compile Include="Pipeline\Commands\Connectors\EventLogReader.cs" />
     <Compile Include="Pipeline\Commands\Connectors\WinScpFileUploader.cs" />
     <Compile Include="Pipeline\Commands\Connectors\WinScpFileDownloader.cs" />
+    <Compile Include="Pipeline\Commands\File\DirectoryArchiver.cs" />
     <Compile Include="Pipeline\Commands\Trigger\OracleTableTrigger.cs" />
     <Compile Include="Pipeline\DataCommandDescription.cs" />
     <Compile Include="Pipeline\DataCommandDescriptionAttribute.cs" />

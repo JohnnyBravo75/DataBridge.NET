@@ -15,7 +15,7 @@ namespace DataBridge.Commands
             this.Parameters.Add(new CommandParameter() { Name = "SourceFile", NotNull = true });
             this.Parameters.Add(new CommandParameter() { Name = "ZipName", NotNull = true });
             this.Parameters.Add(new CommandParameter() { Name = "Password", Direction = Directions.In, UseEncryption = true });
-            this.Parameters.Add(new CommandParameter() { Name = "RemoveSourceFile", Value = false });
+            this.Parameters.Add(new CommandParameter() { Name = "RemoveSourceFile", Value = true });
         }
 
         [XmlIgnore]
