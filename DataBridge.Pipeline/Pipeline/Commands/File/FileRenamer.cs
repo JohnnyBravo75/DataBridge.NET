@@ -58,22 +58,25 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("NewSuffix", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
+            foreach (var inParameters in inParametersList)
+            {
+                //inParameters = GetCurrentInParameters();
 
-            var sourceDirectory = inParameters.GetValue<string>("SourceDirectory");
-            var searchString = inParameters.GetValue<string>("SearchString");
-            var replaceString = inParameters.GetValue<string>("ReplaceString");
-            var fileFilter = inParameters.GetValue<string>("FileFilter");
-            var newPrefix = inParameters.GetValue<string>("NewPrefix");
-            var newSuffix = inParameters.GetValue<string>("NewSuffix");
+                var sourceDirectory = inParameters.GetValue<string>("SourceDirectory");
+                var searchString = inParameters.GetValue<string>("SearchString");
+                var replaceString = inParameters.GetValue<string>("ReplaceString");
+                var fileFilter = inParameters.GetValue<string>("FileFilter");
+                var newPrefix = inParameters.GetValue<string>("NewPrefix");
+                var newSuffix = inParameters.GetValue<string>("NewSuffix");
 
-            FileUtil.RenameFiles(sourceDirectory, searchString, replaceString, fileFilter, newPrefix, newSuffix);
+                FileUtil.RenameFiles(sourceDirectory, searchString, replaceString, fileFilter, newPrefix, newSuffix);
 
-            var outParameters = this.GetCurrentOutParameters();
-            //outParameters.AddOrUpdate(new CommandParameter() { Name = "File", Value = targetFile });
-            yield return outParameters;
+                var outParameters = this.GetCurrentOutParameters();
+                //outParameters.AddOrUpdate(new CommandParameter() { Name = "File", Value = targetFile });
+                yield return outParameters;
+            }
         }
     }
 }

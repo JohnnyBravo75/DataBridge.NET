@@ -3,9 +3,9 @@ using System.Data;
 using System.Net;
 using System.Xml.Serialization;
 using DataBridge.Extensions;
-using DataBridge.Formatters;
 using DataBridge.Helper;
 using DataBridge.Services;
+using DataConnectors.Formatters;
 
 namespace DataBridge.Commands
 {
@@ -44,20 +44,23 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("Url", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string url = inParameters.GetValue<string>("Url");
-            string encodingName = inParameters.GetValueOrDefault<string>("EncodingName", "utf-8");
-            string passWord = inParameters.GetValue<string>("Password");
-            string user = inParameters.GetValue<string>("User");
-            var table = inParameters.GetValueOrDefault<DataTable>("Data");
-
-            foreach (var data in this.ReadData(url, encodingName, user, passWord, inParameters.ToDictionary()))
+            foreach (var inParameters in inParametersList)
             {
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("Data", data);
-                yield return outParameters;
+                //inParameters = GetCurrentInParameters();
+                string url = inParameters.GetValue<string>("Url");
+                string encodingName = inParameters.GetValueOrDefault<string>("EncodingName", "utf-8");
+                string passWord = inParameters.GetValue<string>("Password");
+                string user = inParameters.GetValue<string>("User");
+                var table = inParameters.GetValueOrDefault<DataTable>("Data");
+
+                foreach (var data in this.ReadData(url, encodingName, user, passWord, inParameters.ToDictionary()))
+                {
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("Data", data);
+                    yield return outParameters;
+                }
             }
         }
 

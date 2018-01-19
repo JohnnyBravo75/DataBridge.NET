@@ -36,38 +36,41 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("Password", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("SourceFile");
-            string targetDirectory = inParameters.GetValue<string>("TargetDirectory");
-            string password = inParameters.GetValue<string>("Password");
-
-            DirectoryUtil.CreateDirectoryIfNotExists(targetDirectory);
-
-            int numUnzipped = 0;
-            using (var zipFile = ZipFile.Read(file))
+            foreach (var inParameters in inParametersList)
             {
-                foreach (ZipEntry entry in zipFile)
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("SourceFile");
+                string targetDirectory = inParameters.GetValue<string>("TargetDirectory");
+                string password = inParameters.GetValue<string>("Password");
+
+                DirectoryUtil.CreateDirectoryIfNotExists(targetDirectory);
+
+                int numUnzipped = 0;
+                using (var zipFile = ZipFile.Read(file))
                 {
-                    entry.ExtractWithPassword(targetDirectory, password);
-                    string unzipFile = Path.Combine(targetDirectory, entry.FileName);
+                    foreach (ZipEntry entry in zipFile)
+                    {
+                        entry.ExtractWithPassword(targetDirectory, password);
+                        string unzipFile = Path.Combine(targetDirectory, entry.FileName);
 
-                    numUnzipped++;
+                        numUnzipped++;
 
-                    var outParameters = this.GetCurrentOutParameters();
-                    outParameters.SetOrAddValue("File", unzipFile);
-                    yield return outParameters;
+                        var outParameters = this.GetCurrentOutParameters();
+                        outParameters.SetOrAddValue("File", unzipFile);
+                        yield return outParameters;
+                    }
                 }
-            }
 
-            if (numUnzipped > 0)
-            {
-                yield break;
-            }
+                if (numUnzipped > 0)
+                {
+                    yield break;
+                }
 
-            var defaultOutParameters = this.GetCurrentOutParameters();
-            yield return this.TransferOutParameters(defaultOutParameters);
+                var defaultOutParameters = this.GetCurrentOutParameters();
+                yield return this.TransferOutParameters(defaultOutParameters);
+            }
         }
     }
 }

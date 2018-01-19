@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 using DataBridge.Common.Helper;
+using DataConnectors.Adapter;
 
 namespace DataBridge.ConnectionInfos
 {

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Xml.Serialization;
-using DataBridge.Common.Services.Adapter;
-using DataBridge.Formatters;
+using DataConnectors.Adapter.FileAdapter;
+using DataConnectors.Formatters;
+using DataConnectors.Formatters.Model;
 
 namespace DataBridge.Commands
 {
@@ -58,44 +59,51 @@ namespace DataBridge.Commands
             base.Initialize();
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("File");
-            string rowXPath = inParameters.GetValue<string>("RowXPath");
-
-            this.LogDebugFormat("Start reading File='{0}'", file);
-
-            this.xmlAdapter.FileName = file;
-            this.xmlAdapter.XPath = rowXPath;
-
-            int rowCount = 0;
-            foreach (var data in this.xmlAdapter.ReadDataObjects<object>(this.MaxRowsToRead))
+            foreach (var inParameters in inParametersList)
             {
-                if (data is DataSet)
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("File");
+                string rowXPath = inParameters.GetValue<string>("RowXPath");
+
+                this.LogDebugFormat("Start reading File='{0}'", file);
+
+                this.xmlAdapter.FileName = file;
+                this.xmlAdapter.XPath = rowXPath;
+
+                int rowCount = 0;
+                foreach (var data in this.xmlAdapter.ReadDataObjects<object>(this.MaxRowsToRead))
                 {
-                    foreach (DataTable dsTable in (data as DataSet).Tables)
+                    if (data is DataSet)
                     {
-                        rowCount += dsTable.Rows.Count;
+                        foreach (DataTable dsTable in (data as DataSet).Tables)
+                        {
+                            rowCount += dsTable.Rows.Count;
+
+                            var outParameters = this.GetCurrentOutParameters();
+                            outParameters.Add(new CommandParameter() { Name = "Data", Value = dsTable });
+                            outParameters.Add(new CommandParameter() { Name = "DataName", Value = dsTable.TableName });
+                            yield return outParameters;
+                        }
+                    }
+                    else if (data is DataTable)
+                    {
+                        rowCount += (data as DataTable).Rows.Count;
 
                         var outParameters = this.GetCurrentOutParameters();
-                        outParameters.Add(new CommandParameter() { Name = "Data", Value = dsTable });
-                        outParameters.Add(new CommandParameter() { Name = "DataName", Value = dsTable.TableName });
+                        outParameters.Add(new CommandParameter() { Name = "Data", Value = data });
+                        outParameters.Add(new CommandParameter()
+                        {
+                            Name = "DataName",
+                            Value = (data as DataTable).TableName
+                        });
                         yield return outParameters;
                     }
                 }
-                else if (data is DataTable)
-                {
-                    rowCount += (data as DataTable).Rows.Count;
 
-                    var outParameters = this.GetCurrentOutParameters();
-                    outParameters.Add(new CommandParameter() { Name = "Data", Value = data });
-                    outParameters.Add(new CommandParameter() { Name = "DataName", Value = (data as DataTable).TableName });
-                    yield return outParameters;
-                }
+                this.LogDebugFormat("End reading File='{0}': Rows={1}", file, rowCount);
             }
-
-            this.LogDebugFormat("End reading File='{0}': Rows={1}", file, rowCount);
         }
     }
 }

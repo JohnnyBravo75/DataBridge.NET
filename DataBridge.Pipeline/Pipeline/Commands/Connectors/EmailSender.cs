@@ -80,65 +80,68 @@ namespace DataBridge.Commands
             set { this.attachments = value; }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string mailFrom = inParameters.GetValue<string>("From");
-            string mailTo = inParameters.GetValue<string>("To");
-            string mailCc = inParameters.GetValue<string>("CC");
-            string mailBcc = inParameters.GetValue<string>("BCC");
-            //object data = inParameters.GetValue<object>("Data");
-
-            var smtpConnectionInfo = this.ConnectionInfo as SmtpConnectionInfo;
-            if (smtpConnectionInfo == null)
+            foreach (var inParameters in inParametersList)
             {
-                throw new ArgumentNullException("ConnectionInfo");
-            }
+                //inParameters = GetCurrentInParameters();
+                string mailFrom = inParameters.GetValue<string>("From");
+                string mailTo = inParameters.GetValue<string>("To");
+                string mailCc = inParameters.GetValue<string>("CC");
+                string mailBcc = inParameters.GetValue<string>("BCC");
+                //object data = inParameters.GetValue<object>("Data");
 
-
-            using (var message = new MailMessage())
-            {
-                // From
-                message.From = new MailAddress(mailFrom, mailFrom, Encoding.UTF8);
-
-                // To
-                var to = mailTo.Replace(";", ",");
-                foreach (string emailaddress in to.Split(','))
+                var smtpConnectionInfo = this.ConnectionInfo as SmtpConnectionInfo;
+                if (smtpConnectionInfo == null)
                 {
-                    message.To.Add(new MailAddress(emailaddress, string.Empty, Encoding.UTF8));
+                    throw new ArgumentNullException("ConnectionInfo");
                 }
 
-                message.Subject = TokenProcessor.ReplaceTokens(this.Subject, inParameters.ToDictionary());
-                message.Body = TokenProcessor.ReplaceTokens(this.Body, inParameters.ToDictionary());
-
-                // Attachments
-                foreach (var attachment in this.Attachments)
+                using (var message = new MailMessage())
                 {
-                    string fileName = TokenProcessor.ReplaceTokens(attachment, inParameters.ToDictionary());
-                    message.Attachments.Add(new Attachment(fileName));
-                }
+                    // From
+                    message.From = new MailAddress(mailFrom, mailFrom, Encoding.UTF8);
 
-                using (var smtpClient = new SmtpClient())
-                {
-                    smtpClient.Host = smtpConnectionInfo.SmtpServer;
-                    smtpClient.Port = smtpConnectionInfo.SmtpPort;
-                    if (smtpConnectionInfo.EnableSecure)
+                    // To
+                    var to = mailTo.Replace(";", ",");
+                    foreach (string emailaddress in to.Split(','))
                     {
-                        smtpClient.EnableSsl = smtpConnectionInfo.EnableSecure;
+                        message.To.Add(new MailAddress(emailaddress, string.Empty, Encoding.UTF8));
                     }
 
-                    if (!string.IsNullOrEmpty(smtpConnectionInfo.UserName))
+                    message.Subject = TokenProcessor.ReplaceTokens(this.Subject, inParameters.ToDictionary());
+                    message.Body = TokenProcessor.ReplaceTokens(this.Body, inParameters.ToDictionary());
+
+                    // Attachments
+                    foreach (var attachment in this.Attachments)
                     {
-                        smtpClient.UseDefaultCredentials = false;
-                        smtpClient.Credentials = new NetworkCredential(smtpConnectionInfo.UserName, smtpConnectionInfo.DecryptedPassword);
+                        string fileName = TokenProcessor.ReplaceTokens(attachment, inParameters.ToDictionary());
+                        message.Attachments.Add(new Attachment(fileName));
                     }
 
-                    smtpClient.Send(message);
-                }
-            }
+                    using (var smtpClient = new SmtpClient())
+                    {
+                        smtpClient.Host = smtpConnectionInfo.SmtpServer;
+                        smtpClient.Port = smtpConnectionInfo.SmtpPort;
+                        if (smtpConnectionInfo.EnableSecure)
+                        {
+                            smtpClient.EnableSsl = smtpConnectionInfo.EnableSecure;
+                        }
 
-            var outParameters = this.GetCurrentOutParameters();
-            yield return outParameters;
+                        if (!string.IsNullOrEmpty(smtpConnectionInfo.UserName))
+                        {
+                            smtpClient.UseDefaultCredentials = false;
+                            smtpClient.Credentials = new NetworkCredential(smtpConnectionInfo.UserName,
+                                smtpConnectionInfo.DecryptedPassword);
+                        }
+
+                        smtpClient.Send(message);
+                    }
+                }
+
+                var outParameters = this.GetCurrentOutParameters();
+                yield return outParameters;
+            }
         }
     }
 }

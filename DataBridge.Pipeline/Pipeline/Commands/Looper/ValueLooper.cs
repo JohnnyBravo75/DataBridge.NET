@@ -16,7 +16,7 @@ namespace DataBridge.Commands
             set { this.valueItems = value; }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParameters)
         {
             //inParameters = GetCurrentInParameters();
 

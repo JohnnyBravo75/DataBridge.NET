@@ -72,52 +72,56 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("FtpType", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string host = inParameters.GetValue<string>("Host");
-            string passWord = inParameters.GetValue<string>("Password");
-            string user = inParameters.GetValue<string>("User");
-            string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "\\*.*");
-            string localDirectory = inParameters.GetValue<string>("LocalDirectory");
-            FtpTypes ftpType = inParameters.GetValue<FtpTypes>("FtpType");
-
-            if (this.ftp == null)
+            foreach (var inParameters in inParametersList)
             {
-                switch (ftpType)
+                //inParameters = GetCurrentInParameters();
+                string host = inParameters.GetValue<string>("Host");
+                string passWord = inParameters.GetValue<string>("Password");
+                string user = inParameters.GetValue<string>("User");
+                string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "\\*.*");
+                string localDirectory = inParameters.GetValue<string>("LocalDirectory");
+                FtpTypes ftpType = inParameters.GetValue<FtpTypes>("FtpType");
+
+                if (this.ftp == null)
                 {
-                    case FtpTypes.FTP:
-                        this.ftp = new Ftp();
-                        break;
+                    switch (ftpType)
+                    {
+                        case FtpTypes.FTP:
+                            this.ftp = new Ftp();
+                            break;
 
-                    case FtpTypes.FTPS:
-                        this.ftp = new FtpS();
-                        break;
+                        case FtpTypes.FTPS:
+                            this.ftp = new FtpS();
+                            break;
 
-                    case FtpTypes.SFTP:
-                        this.ftp = new SFtp();
-                        break;
+                        case FtpTypes.SFTP:
+                            this.ftp = new SFtp();
+                            break;
+                    }
                 }
+
+                this.ftp.SetConnectionInfos(host, user, passWord);
+
+                //this.ftp.SetConnectionInfos(this.ConnectionInfo.FtpServer, this.ConnectionInfo.UserName, this.ConnectionInfo.DecryptedPassword);
+
+                this.LogDebugFormat("Start reading files from Host='{0}', RemoteDirectory='{1}'", host, remoteDirectory);
+
+                int fileIdx = 0;
+                foreach (var localFileName in this.ReadData(remoteDirectory, localDirectory))
+                {
+                    fileIdx++;
+
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("File", localFileName);
+
+                    yield return outParameters;
+                }
+
+                this.LogDebugFormat("End reading files from Host='{0}', RemoteDirectory='{1}': FilesCount={2}", host,
+                    remoteDirectory, fileIdx);
             }
-
-            this.ftp.SetConnectionInfos(host, user, passWord);
-
-            //this.ftp.SetConnectionInfos(this.ConnectionInfo.FtpServer, this.ConnectionInfo.UserName, this.ConnectionInfo.DecryptedPassword);
-
-            this.LogDebugFormat("Start reading files from Host='{0}', RemoteDirectory='{1}'", host, remoteDirectory);
-
-            int fileIdx = 0;
-            foreach (var localFileName in this.ReadData(remoteDirectory, localDirectory))
-            {
-                fileIdx++;
-
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("File", localFileName);
-
-                yield return outParameters;
-            }
-
-            this.LogDebugFormat("End reading files from Host='{0}', RemoteDirectory='{1}': FilesCount={2}", host, remoteDirectory, fileIdx);
         }
 
         private IEnumerable<string> ReadData(string remoteDirectory, string localDirectory)

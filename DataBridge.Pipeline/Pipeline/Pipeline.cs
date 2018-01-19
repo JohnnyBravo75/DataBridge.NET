@@ -203,7 +203,8 @@ namespace DataBridge
                     CommandParameters lastParameter = null;
                     TokenManager.Instance.SetTokens(currentCmd.ExecuteParameters.ToDictionary(), this.Name);
 
-                    foreach (CommandParameters outParameters in currentCmd.ExecuteCommand(currentCmd.ExecuteParameters))
+                    var commandParametersList = new List<CommandParameters> { currentCmd.ExecuteParameters };
+                    foreach (CommandParameters outParameters in currentCmd.ExecuteCommand(commandParametersList))
                     {
                         if (this.OnExecuteCommand != null)
                         {
@@ -247,6 +248,7 @@ namespace DataBridge
                         {
                             nextSiblingCmd.Initialize();
                             nextSiblingCmd.UseStreaming = this.UseStreaming;
+                            nextSiblingCmd.StreamingBlockSize = this.StreamingBlockSize;
                         }
 
                         if (lastParameter == null)
@@ -279,24 +281,17 @@ namespace DataBridge
         public bool ExecutePipeline(CommandParameters inParameters = null)
         {
             var startCommand = this.Commands.FirstOrDefault();
-            if (startCommand != null)
-            {
-                startCommand.Initialize();
-                startCommand.UseStreaming = this.UseStreaming;
-                startCommand.StreamingBlockSize = this.StreamingBlockSize;
-                startCommand.SetParameters(inParameters, this.OnSignalExecution);
-                if (!startCommand.BeforeExecute())
-                {
-                    return false;
-                }
-
-            }
-            else
+            if (startCommand == null)
             {
                 throw new Exception(string.Format("No Commands in pipeline '{0}'", this.Name));
             }
 
-            return true;
+            startCommand.Initialize();
+            startCommand.UseStreaming = this.UseStreaming;
+            startCommand.StreamingBlockSize = this.StreamingBlockSize;
+            startCommand.SetParameters(inParameters, this.OnSignalExecution);
+
+            return startCommand.BeforeExecute();
         }
 
         public List<string> ValidatePipeline()
@@ -329,7 +324,7 @@ namespace DataBridge
             }
         }
 
-        protected bool Equals(Pipeline other)
+        public bool Equals(Pipeline other)
         {
             return string.Equals(this.Name, other.Name);
         }

@@ -1,4 +1,5 @@
-﻿using DataBridge.Handler.Services.Adapter;
+﻿using DataConnectors.Adapter.DbAdapter;
+using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
 
 namespace DataBridge.Services
 {

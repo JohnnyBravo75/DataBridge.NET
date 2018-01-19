@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Xml.Serialization;
 using DataBridge.Helper;
 using Ionic.Zip;
@@ -15,7 +13,7 @@ namespace DataBridge.Commands
             this.Parameters.Add(new CommandParameter() { Name = "TargetDirectory", NotNull = true });
             this.Parameters.Add(new CommandParameter() { Name = "SourceDirectory", NotNull = true });
             this.Parameters.Add(new CommandParameter() { Name = "ZipName", NotNull = true });
-            this.Parameters.Add(new CommandParameter() { Name = "FileFilter", NotNull = false, Value = "*.*"});
+            this.Parameters.Add(new CommandParameter() { Name = "FileFilter", NotNull = false, Value = "*.*" });
             this.Parameters.Add(new CommandParameter() { Name = "Password", Direction = Directions.In, UseEncryption = true });
             this.Parameters.Add(new CommandParameter() { Name = "RemoveSourceFiles", Value = true });
         }
@@ -62,37 +60,40 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("RemoveSourceFiles", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string sourceDirectory = inParameters.GetValue<string>("SourceDirectory");
-            string targetDirectory = inParameters.GetValueOrDefault<string>("TargetDirectory", Path.Combine(sourceDirectory, @"\{yyyy}\{MM}\"));
-            string zipName = inParameters.GetValueOrDefault<string>("ZipName", "data" + ".zip");
-            string password = inParameters.GetValue<string>("Password");
-            bool removeSourceFiles = inParameters.GetValueOrDefault<bool>("RemoveSourceFiles", true);
-            string fileFiler = inParameters.GetValueOrDefault<string>("FileFilter", "*.*"); 
-
-            DirectoryUtil.CreateDirectoryIfNotExists(targetDirectory);
-
-            var targetFile = Path.Combine(targetDirectory, zipName);
-
-            this.ZipDirectory(sourceDirectory, password, targetFile, fileFiler);
-
-            if (removeSourceFiles)
+            foreach (var inParameters in inParametersList)
             {
-                this.DeleteFilesInDirectory(sourceDirectory, fileFiler);
+                //inParameters = GetCurrentInParameters();
+                string sourceDirectory = inParameters.GetValue<string>("SourceDirectory");
+                string targetDirectory = inParameters.GetValueOrDefault<string>("TargetDirectory",
+                    Path.Combine(sourceDirectory, @"\{yyyy}\{MM}\"));
+                string zipName = inParameters.GetValueOrDefault<string>("ZipName", "data" + ".zip");
+                string password = inParameters.GetValue<string>("Password");
+                bool removeSourceFiles = inParameters.GetValueOrDefault<bool>("RemoveSourceFiles", true);
+                string fileFiler = inParameters.GetValueOrDefault<string>("FileFilter", "*.*");
+
+                DirectoryUtil.CreateDirectoryIfNotExists(targetDirectory);
+
+                var targetFile = Path.Combine(targetDirectory, zipName);
+
+                this.ZipDirectory(sourceDirectory, password, targetFile, fileFiler);
+
+                if (removeSourceFiles)
+                {
+                    this.DeleteFilesInDirectory(sourceDirectory, fileFiler);
+                }
+
+                this.LogDebug(string.Format("Zipping archive='{0}'", targetFile));
+
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.SetOrAddValue("File", targetFile);
+                yield return outParameters;
             }
-
-            this.LogDebug(string.Format("Zipping archive='{0}'", targetFile));
-
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.SetOrAddValue("File", targetFile);
-            yield return outParameters;
         }
 
         private void DeleteFilesInDirectory(string sourceDirectory, string fileFilter = "*.*")
         {
-
             var dirInfo = new DirectoryInfo(sourceDirectory);
 
             foreach (var file in dirInfo.GetFiles(fileFilter, SearchOption.TopDirectoryOnly))
@@ -113,6 +114,6 @@ namespace DataBridge.Commands
                 zipFile.Password = password;
                 zipFile.Save(targetFile);
             }
-        }   
+        }
     }
 }

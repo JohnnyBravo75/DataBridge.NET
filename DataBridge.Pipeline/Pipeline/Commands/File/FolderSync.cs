@@ -36,40 +36,46 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("FileFilter", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string sourceDirectory = inParameters.GetValue<string>("SourceDirectory");
-            string targetDirectory = inParameters.GetValue<string>("TargetDirectory");
-            string fileFilter = inParameters.GetValue<string>("FileFilter");
-
-            var folderSyncer = new Services.FileFolderSynchronizer();
-            if (Directory.Exists(sourceDirectory))
+            foreach (var inParameters in inParametersList)
             {
-                this.LogDebugFormat("Start synchronizing from '{0}' to '{1}'...", sourceDirectory, targetDirectory);
+                //inParameters = GetCurrentInParameters();
+                string sourceDirectory = inParameters.GetValue<string>("SourceDirectory");
+                string targetDirectory = inParameters.GetValue<string>("TargetDirectory");
+                string fileFilter = inParameters.GetValue<string>("FileFilter");
 
-                folderSyncer.SourceDirectory = sourceDirectory;
-                folderSyncer.TargetDirectory = targetDirectory;
-                folderSyncer.FileFilter = fileFilter;
-                folderSyncer.Sync();
+                var folderSyncer = new Services.FileFolderSynchronizer();
+                if (Directory.Exists(sourceDirectory))
+                {
+                    this.LogDebugFormat("Start synchronizing from '{0}' to '{1}'...", sourceDirectory, targetDirectory);
 
-                this.LogDebugFormat("Ended synchronizing. SyncNew={0}, SyncChanged={1}, SyncDeleted={2}, SyncChecked={3}", folderSyncer.Added.Count(), folderSyncer.Changed.Count(), folderSyncer.Deleted.Count(), folderSyncer.Checked.Count());
+                    folderSyncer.SourceDirectory = sourceDirectory;
+                    folderSyncer.TargetDirectory = targetDirectory;
+                    folderSyncer.FileFilter = fileFilter;
+                    folderSyncer.Sync();
 
-                this.SetToken("SyncNew", folderSyncer.Added.Count());
-                this.SetToken("SyncChanged", folderSyncer.Changed.Count());
-                this.SetToken("SyncDeleted", folderSyncer.Deleted.Count());
-                this.SetToken("SyncChecked", folderSyncer.Checked.Count());
+                    this.LogDebugFormat(
+                        "Ended synchronizing. SyncNew={0}, SyncChanged={1}, SyncDeleted={2}, SyncChecked={3}",
+                        folderSyncer.Added.Count(), folderSyncer.Changed.Count(), folderSyncer.Deleted.Count(),
+                        folderSyncer.Checked.Count());
+
+                    this.SetToken("SyncNew", folderSyncer.Added.Count());
+                    this.SetToken("SyncChanged", folderSyncer.Changed.Count());
+                    this.SetToken("SyncDeleted", folderSyncer.Deleted.Count());
+                    this.SetToken("SyncChecked", folderSyncer.Checked.Count());
+                }
+                else
+                {
+                    var errorMsg = string.Format("Source directory '{0}' does not exist", sourceDirectory);
+                    this.LogErrorFormat(errorMsg);
+                    throw new Exception(errorMsg);
+                }
+
+                var outParameters = this.GetCurrentOutParameters();
+
+                yield return outParameters;
             }
-            else
-            {
-                var errorMsg = string.Format("Source directory '{0}' does not exist", sourceDirectory);
-                this.LogErrorFormat(errorMsg);
-                throw new Exception(errorMsg);
-            }
-
-            var outParameters = this.GetCurrentOutParameters();
-
-            yield return outParameters;
         }
     }
 }

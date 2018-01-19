@@ -2,10 +2,9 @@
 using System.Data;
 using System.Linq;
 using System.Xml.Serialization;
-using DataBridge.ConnectionInfos;
 using DataBridge.Extensions;
-using DataBridge.Handler.Services.Adapter;
-using DataBridge.Services;
+using DataConnectors.Adapter.DbAdapter;
+using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
 
 namespace DataBridge.Commands
 {
@@ -49,31 +48,34 @@ namespace DataBridge.Commands
             this.dbAdapter.ConnectionInfo = this.ConnectionInfo;
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string sql = this.SqlTemplate;
-
-            sql = this.ApplyDataMappings(sql, inParameters.ToDictionary());
-
-            this.dbAdapter.Connect();
-
-            this.LogDebugFormat("Start reading Sql='{0}'", sql);
-
-            int rowIdx = 0;
-            foreach (DataTable table in this.dbAdapter.ExecuteSql(sql, this.MaxRowsToRead))
+            foreach (var inParameters in inParametersList)
             {
-                rowIdx += table.Rows.Count;
+                this.dbAdapter.Connect();
 
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("Data", table);
-                outParameters.SetOrAddValue("DataName", table.TableName);
-                yield return outParameters;
+                //inParameters = GetCurrentInParameters();
+                string sql = this.SqlTemplate;
+
+                sql = this.ApplyDataMappings(sql, inParameters.ToDictionary());
+
+                this.LogDebugFormat("Start reading Sql='{0}'", sql);
+
+                int rowIdx = 0;
+                foreach (DataTable table in this.dbAdapter.ExecuteSql(sql, this.MaxRowsToRead))
+                {
+                    rowIdx += table.Rows.Count;
+
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("Data", table);
+                    outParameters.SetOrAddValue("DataName", table.TableName);
+                    yield return outParameters;
+                }
+
+                this.LogDebugFormat("End reading Sql='{0}': Rows={1}", sql, rowIdx);
+
+                this.dbAdapter.Disconnect();
             }
-
-            this.LogDebugFormat("End reading Sql='{0}': Rows={1}", sql, rowIdx);
-
-            this.dbAdapter.Disconnect();
         }
 
         private string ApplyDataMappings(string sql, IDictionary<string, object> parameters)

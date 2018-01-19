@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
 using Oracle.DataAccess.Client;
 
 namespace DataBridge.Services
@@ -57,7 +58,7 @@ namespace DataBridge.Services
             cmd.Notification.IsNotifiedOnce = false;
             cmd.Notification.IsPersistent = true;
             cmd.AddRowid = true;
-            cmd.ExecuteNonQuery(); 
+            cmd.ExecuteNonQuery();
         }
 
         private void Dependency_OnChange(object sender, OracleNotificationEventArgs eventArgs)

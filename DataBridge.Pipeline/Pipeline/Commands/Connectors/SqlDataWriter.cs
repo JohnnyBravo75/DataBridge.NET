@@ -4,10 +4,9 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Xml.Serialization;
-using DataBridge.ConnectionInfos;
 using DataBridge.Extensions;
-using DataBridge.Handler.Services.Adapter;
-using DataBridge.Services;
+using DataConnectors.Adapter.DbAdapter;
+using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
 
 namespace DataBridge.Commands
 {
@@ -48,25 +47,30 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("UseStoredProc", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            var data = inParameters.GetValue<object>("Data");
-            var useStoredProc = inParameters.GetValue<bool>("UseStoredProc");
-
-            if (data is DataTable)
+            foreach (var inParameters in inParametersList)
             {
-                var table = data as DataTable;
-                this.WriteData(table, this.SqlTemplate, inParameters.ToDictionary(), useStoredProc);
+                //inParameters = GetCurrentInParameters();
+                var data = inParameters.GetValue<object>("Data");
+                var useStoredProc = inParameters.GetValue<bool>("UseStoredProc");
 
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("Data", table);
-                outParameters.SetOrAddValue("DataName", table.TableName);
-                yield return outParameters;
-            }
-            else if (data != null)
-            {
-                throw new NotSupportedException(string.Format("Parameter 'Data' is not a 'DataTable' - Type '{0}' is not supported.", data.GetType()));
+                if (data is DataTable)
+                {
+                    var table = data as DataTable;
+                    this.WriteData(table, this.SqlTemplate, inParameters.ToDictionary(), useStoredProc);
+
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("Data", table);
+                    outParameters.SetOrAddValue("DataName", table.TableName);
+                    yield return outParameters;
+                }
+                else if (data != null)
+                {
+                    throw new NotSupportedException(
+                        string.Format("Parameter 'Data' is not a 'DataTable' - Type '{0}' is not supported.",
+                            data.GetType()));
+                }
             }
         }
 

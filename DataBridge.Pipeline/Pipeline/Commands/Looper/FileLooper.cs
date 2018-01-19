@@ -27,27 +27,30 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("FileFilter", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string fileFilter = inParameters.GetValueOrDefault<string>("FileFilter", "*.*");
-            string sourceDirectory = inParameters.GetValue<string>("SourceDirectory");
-
-            sourceDirectory = EnvironmentHelper.ExpandEnvironmentVariables(sourceDirectory);
-
-            string[] files = Directory.GetFiles(sourceDirectory, fileFilter, SearchOption.TopDirectoryOnly);
-            this.LogDebugFormat("{0} files found in '{1}' matching '{2}'", files.Length, sourceDirectory, fileFilter);
-
-            int idx = 0;
-            foreach (string file in files)
+            foreach (var inParameters in inParametersList)
             {
-                idx++;
-                this.LogDebugFormat("Looping ({0}/{1}) file='{2}'", idx, files.Length, file);
+                //inParameters = GetCurrentInParameters();
+                string fileFilter = inParameters.GetValueOrDefault<string>("FileFilter", "*.*");
+                string sourceDirectory = inParameters.GetValue<string>("SourceDirectory");
 
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.AddOrUpdate(new CommandParameter() { Name = "File", Value = file });
-                outParameters.AddOrUpdate(new CommandParameter() { Name = "FileName", Value = Path.GetFileName(file) });
-                yield return outParameters;
+                sourceDirectory = EnvironmentHelper.ExpandEnvironmentVariables(sourceDirectory);
+
+                string[] files = Directory.GetFiles(sourceDirectory, fileFilter, SearchOption.TopDirectoryOnly);
+                this.LogDebugFormat("{0} files found in '{1}' matching '{2}'", files.Length, sourceDirectory, fileFilter);
+
+                int idx = 0;
+                foreach (string file in files)
+                {
+                    idx++;
+                    this.LogDebugFormat("Looping ({0}/{1}) file='{2}'", idx, files.Length, file);
+
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.AddOrUpdate(new CommandParameter() { Name = "File", Value = file });
+                    outParameters.AddOrUpdate(new CommandParameter() { Name = "FileName", Value = Path.GetFileName(file) });
+                    yield return outParameters;
+                }
             }
         }
     }

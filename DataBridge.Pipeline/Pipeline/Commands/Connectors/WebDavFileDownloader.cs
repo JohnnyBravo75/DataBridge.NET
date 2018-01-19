@@ -59,36 +59,40 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("LocalDirectory", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string url = inParameters.GetValue<string>("Url");
-            string user = inParameters.GetValue<string>("User");
-            string passWord = inParameters.GetValue<string>("Password");
-            string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "/");
-            string localDirectory = inParameters.GetValue<string>("LocalDirectory");
-
-            var cloudConfig = CloudStorage.GetCloudConfigurationEasy(nSupportedCloudConfigurations.WebDav, new Uri(url));
-            var cloudCredentials = new GenericNetworkCredentials() { UserName = user, Password = passWord };
-
-            this.cloudStorage.Open(cloudConfig, cloudCredentials);
-
-            this.LogDebugFormat("Start reading files from Url='{0}', RemoteDirectory='{1}'", url, remoteDirectory);
-
-            int fileIdx = 0;
-            foreach (var localFileName in this.ReadData(remoteDirectory, localDirectory))
+            foreach (var inParameters in inParametersList)
             {
-                fileIdx++;
+                //inParameters = GetCurrentInParameters();
+                string url = inParameters.GetValue<string>("Url");
+                string user = inParameters.GetValue<string>("User");
+                string passWord = inParameters.GetValue<string>("Password");
+                string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "/");
+                string localDirectory = inParameters.GetValue<string>("LocalDirectory");
 
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("File", localFileName);
+                var cloudConfig = CloudStorage.GetCloudConfigurationEasy(nSupportedCloudConfigurations.WebDav, new Uri(url));
+                var cloudCredentials = new GenericNetworkCredentials() { UserName = user, Password = passWord };
 
-                yield return outParameters;
+                this.cloudStorage.Open(cloudConfig, cloudCredentials);
+
+                this.LogDebugFormat("Start reading files from Url='{0}', RemoteDirectory='{1}'", url, remoteDirectory);
+
+                int fileIdx = 0;
+                foreach (var localFileName in this.ReadData(remoteDirectory, localDirectory))
+                {
+                    fileIdx++;
+
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("File", localFileName);
+
+                    yield return outParameters;
+                }
+
+                this.LogDebugFormat("End reading files from Url='{0}', RemoteDirectory='{1}': FilesCount={2}", url,
+                    remoteDirectory, fileIdx);
+
+                this.cloudStorage.Close();
             }
-
-            this.LogDebugFormat("End reading files from Url='{0}', RemoteDirectory='{1}': FilesCount={2}", url, remoteDirectory, fileIdx);
-
-            this.cloudStorage.Close();
         }
 
         private IEnumerable<string> ReadData(string remoteDirectory, string localDirectory)

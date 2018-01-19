@@ -68,62 +68,63 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("Protocol", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string host = inParameters.GetValue<string>("Host");
-            string passWord = inParameters.GetValue<string>("Password");
-            string user = inParameters.GetValue<string>("User");
-            string file = inParameters.GetValue<string>("File");
-            string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "\\*.*");
-            string localDirectory = inParameters.GetValue<string>("LocalDirectory");
-            Protocol protocol = inParameters.GetValue<Protocol>("Protocol");
-            string sshHostKeyFingerprint = inParameters.GetValue<string>("SshHostKeyFingerprint");
-
-            if (!string.IsNullOrEmpty(file) && string.IsNullOrEmpty(localDirectory))
+            foreach (var inParameters in inParametersList)
             {
-                localDirectory = file;
-            }
+                //inParameters = GetCurrentInParameters();
+                string host = inParameters.GetValue<string>("Host");
+                string passWord = inParameters.GetValue<string>("Password");
+                string user = inParameters.GetValue<string>("User");
+                string file = inParameters.GetValue<string>("File");
+                string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "\\*.*");
+                string localDirectory = inParameters.GetValue<string>("LocalDirectory");
+                Protocol protocol = inParameters.GetValue<Protocol>("Protocol");
+                string sshHostKeyFingerprint = inParameters.GetValue<string>("SshHostKeyFingerprint");
 
-            this.LogDebugFormat("Start uploading files from LocalDirectory='{0}', Host='{1}', Mode='{2}'", localDirectory, host, protocol);
-
-            // Setup session options
-            var sessionOptions = new SessionOptions();
-            sessionOptions.Protocol = protocol;
-            sessionOptions.HostName = host;
-            sessionOptions.UserName = user;
-            sessionOptions.Password = passWord;
-            if (!string.IsNullOrEmpty(sshHostKeyFingerprint))
-            {
-                sessionOptions.SshHostKeyFingerprint = sshHostKeyFingerprint;
-            }
-
-            using (var session = new Session())
-            {
-                // Connect
-                session.Open(sessionOptions);
-
-                // Upload files
-                var transferOptions = new TransferOptions();
-                transferOptions.TransferMode = TransferMode.Binary;
-
-                var transferResult = session.PutFiles(localDirectory, remoteDirectory, false, transferOptions);
-
-                // Throw on any error
-                transferResult.Check();
-
-                int fileIdx = 0;
-                foreach (TransferEventArgs transfer in transferResult.Transfers)
+                if (!string.IsNullOrEmpty(file) && string.IsNullOrEmpty(localDirectory))
                 {
-                    fileIdx++;
-
-                    var outParameters = this.GetCurrentOutParameters();
-                    outParameters.SetOrAddValue("File", transfer.FileName);
-
-                    yield return outParameters;
+                    localDirectory = file;
                 }
 
-                this.LogDebugFormat("End uploading files from LocalDirectory='{0}', Host='{1}': FilesCount={2}", localDirectory, host, fileIdx);
+                this.LogDebugFormat("Start uploading files from LocalDirectory='{0}', Host='{1}', Mode='{2}'", localDirectory, host, protocol);
+
+                // Setup session options
+                var sessionOptions = new SessionOptions();
+                sessionOptions.Protocol = protocol;
+                sessionOptions.HostName = host;
+                sessionOptions.UserName = user;
+                sessionOptions.Password = passWord;
+                if (!string.IsNullOrEmpty(sshHostKeyFingerprint))
+                {
+                    sessionOptions.SshHostKeyFingerprint = sshHostKeyFingerprint;
+                }
+
+                using (var session = new Session())
+                {
+                    // Connect
+                    session.Open(sessionOptions);
+
+                    // Upload files
+                    var transferOptions = new TransferOptions { TransferMode = TransferMode.Binary };
+                    var transferResult = session.PutFiles(localDirectory, remoteDirectory, false, transferOptions);
+
+                    // Throw on any error
+                    transferResult.Check();
+
+                    int fileIdx = 0;
+                    foreach (TransferEventArgs transfer in transferResult.Transfers)
+                    {
+                        fileIdx++;
+
+                        var outParameters = this.GetCurrentOutParameters();
+                        outParameters.SetOrAddValue("File", transfer.FileName);
+
+                        yield return outParameters;
+                    }
+
+                    this.LogDebugFormat("End uploading files from LocalDirectory='{0}', Host='{1}': FilesCount={2}", localDirectory, host, fileIdx);
+                }
             }
         }
     }

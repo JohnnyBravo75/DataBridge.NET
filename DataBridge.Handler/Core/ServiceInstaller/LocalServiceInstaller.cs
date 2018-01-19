@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Configuration.Install;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading;
@@ -66,8 +64,6 @@ namespace DataBridge.Services
 
             //            string installStmt = installerDir + INSTALLEREXE + " " + string.Join(" ", installParams);
 
-
-
             string installStmt = installerDir + string.Format(INSTALLEREXE + " /ServiceAccount={0} /UserName={1} /Password={2} /ServiceName=\"{3}\" \"{4}\" ", ServiceAccount.LocalSystem, userName, password, serviceName, physicalLocation);
 
             var process = new ProcessHandler("cmd");
@@ -99,7 +95,6 @@ namespace DataBridge.Services
             if (!File.Exists(Path.Combine(installerDir, INSTALLEREXE)))
             {
                 errorMsg = string.Format("'{0}' was not found in '{1}'", INSTALLEREXE, installerDir);
-
             }
             return installerDir;
         }

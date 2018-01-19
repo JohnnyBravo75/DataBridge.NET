@@ -4,7 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.Serialization;
-using DataBridge.Formatters;
+using DataConnectors.Formatters;
 
 namespace DataBridge.Commands
 {
@@ -63,40 +63,45 @@ namespace DataBridge.Commands
             set { this.formatter = value; }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string logGroup = inParameters.GetValue<string>("LogGroup");
-            string source = inParameters.GetValue<string>("Source");
-            string machineName = inParameters.GetValue<string>("MachineName");
-            EventLogEntryType entryType = inParameters.GetValue<EventLogEntryType>("EntryType");
-            DateTime? minTimeGenerated = inParameters.GetValue<DateTime?>("MinTimeGenerated");
-
-            var eventLog = new EventLog()
+            foreach (var inParameters in inParametersList)
             {
-                Log = logGroup,
-                Source = source,
-                MachineName = machineName
-            };
+                //inParameters = GetCurrentInParameters();
+                string logGroup = inParameters.GetValue<string>("LogGroup");
+                string source = inParameters.GetValue<string>("Source");
+                string machineName = inParameters.GetValue<string>("MachineName");
+                EventLogEntryType entryType = inParameters.GetValue<EventLogEntryType>("EntryType");
+                DateTime? minTimeGenerated = inParameters.GetValue<DateTime?>("MinTimeGenerated");
 
-            this.LogDebugFormat("Start reading events from Eventlog='{0}', Source='{1}'", logGroup, source);
+                var eventLog = new EventLog()
+                {
+                    Log = logGroup,
+                    Source = source,
+                    MachineName = machineName
+                };
 
-            var eventLogs = eventLog.Entries.Cast<EventLogEntry>()
-                                        .Where(x => (x.Source == source || string.IsNullOrEmpty(source)) &&
-                                                    x.EntryType == entryType &&
-                                                    ((minTimeGenerated.HasValue && x.TimeGenerated >= minTimeGenerated.Value) || !minTimeGenerated.HasValue)
-                                              );
+                this.LogDebugFormat("Start reading events from Eventlog='{0}', Source='{1}'", logGroup, source);
 
-            var table = new DataTable();
+                var eventLogs = eventLog.Entries.Cast<EventLogEntry>()
+                    .Where(x => (x.Source == source || string.IsNullOrEmpty(source)) &&
+                                x.EntryType == entryType &&
+                                ((minTimeGenerated.HasValue && x.TimeGenerated >= minTimeGenerated.Value) ||
+                                 !minTimeGenerated.HasValue)
+                    );
 
-            table = this.formatter.Format(eventLogs.ToList(), table) as DataTable;
+                var table = new DataTable();
 
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.SetOrAddValue("Data", table);
-            outParameters.SetOrAddValue("DataName", table.TableName);
-            yield return outParameters;
+                table = this.formatter.Format(eventLogs.ToList(), table) as DataTable;
 
-            this.LogDebugFormat("End reading events from Eventlog='{0}', Source='{1}': Readed={2}", logGroup, source, table.Rows.Count);
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.SetOrAddValue("Data", table);
+                outParameters.SetOrAddValue("DataName", table.TableName);
+                yield return outParameters;
+
+                this.LogDebugFormat("End reading events from Eventlog='{0}', Source='{1}': Readed={2}", logGroup, source,
+                    table.Rows.Count);
+            }
         }
     }
 }

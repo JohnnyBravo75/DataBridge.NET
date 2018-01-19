@@ -29,26 +29,29 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("File", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("File");
-            string startParameter = inParameters.GetValue<string>("StartParameter");
-            string logFile = inParameters.GetValue<string>("OutputLogFile");
-
-            startParameter = TokenProcessor.ReplaceTokens(startParameter, inParameters.ToDictionary());
-            var shellOutput = this.commandShellAction.RunExternalExe(file, startParameter);
-
-            // log output to logfile
-            if (!string.IsNullOrEmpty(logFile) &&
-                !string.IsNullOrWhiteSpace(shellOutput))
+            foreach (var inParameters in inParametersList)
             {
-                System.IO.File.AppendAllText(logFile, shellOutput + Environment.NewLine);
-            }
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("File");
+                string startParameter = inParameters.GetValue<string>("StartParameter");
+                string logFile = inParameters.GetValue<string>("OutputLogFile");
 
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.AddOrUpdate(new CommandParameter() { Name = "Output", Value = shellOutput });
-            yield return outParameters;
+                startParameter = TokenProcessor.ReplaceTokens(startParameter, inParameters.ToDictionary());
+                var shellOutput = this.commandShellAction.RunExternalExe(file, startParameter);
+
+                // log output to logfile
+                if (!string.IsNullOrEmpty(logFile) &&
+                    !string.IsNullOrWhiteSpace(shellOutput))
+                {
+                    System.IO.File.AppendAllText(logFile, shellOutput + Environment.NewLine);
+                }
+
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.AddOrUpdate(new CommandParameter() { Name = "Output", Value = shellOutput });
+                yield return outParameters;
+            }
         }
     }
 }

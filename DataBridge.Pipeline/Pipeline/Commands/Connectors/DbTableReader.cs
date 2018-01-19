@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Xml.Serialization;
-using DataBridge.ConnectionInfos;
 using DataBridge.Extensions;
-using DataBridge.Handler.Services.Adapter;
-using DataBridge.Services;
+using DataConnectors.Adapter.DbAdapter;
+using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace DataBridge.Commands
@@ -48,23 +47,26 @@ namespace DataBridge.Commands
             this.dbAdapter.ConnectionInfo = this.ConnectionInfo;
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string tableName = inParameters.GetValue<string>("TableName");
-
-            this.dbAdapter.TableName = tableName;
-            this.dbAdapter.Connect();
-
-            foreach (DataTable table in this.dbAdapter.ReadData(this.MaxRowsToRead))
+            foreach (var inParameters in inParametersList)
             {
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("Data", table);
-                outParameters.SetOrAddValue("DataName", table.TableName);
-                yield return outParameters;
-            }
+                //inParameters = GetCurrentInParameters();
+                string tableName = inParameters.GetValue<string>("TableName");
 
-            this.dbAdapter.Disconnect();
+                this.dbAdapter.TableName = tableName;
+                this.dbAdapter.Connect();
+
+                foreach (DataTable table in this.dbAdapter.ReadData(this.MaxRowsToRead))
+                {
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("Data", table);
+                    outParameters.SetOrAddValue("DataName", table.TableName);
+                    yield return outParameters;
+                }
+
+                this.dbAdapter.Disconnect();
+            }
         }
 
         public override IList<string> Validate(CommandParameters parameters, ValidationContext context)

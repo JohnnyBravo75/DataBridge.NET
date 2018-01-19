@@ -1,20 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
-using System.Xml.Serialization;
-using DataBridge.Commands;
-using DataBridge.Common;
-using DataBridge.Extensions;
-using DataBridge.Formatters;
-using DataBridge.Helper;
-using DataBridge.Services;
 using log4net.Core;
 
 namespace DataBridge.Runtime

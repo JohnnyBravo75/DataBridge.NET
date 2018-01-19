@@ -76,45 +76,48 @@ namespace DataBridge.Commands
             base.Initialize();
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string host = inParameters.GetValue<string>("Host");
-            string passWord = inParameters.GetValue<string>("Password");
-            string user = inParameters.GetValue<string>("User");
-            string file = inParameters.GetValue<string>("File");
-            string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "\\");
-            FtpTypes ftpType = inParameters.GetValue<FtpTypes>("FtpType");
-
-            if (this.ftp == null)
+            foreach (var inParameters in inParametersList)
             {
-                switch (ftpType)
+                //inParameters = GetCurrentInParameters();
+                string host = inParameters.GetValue<string>("Host");
+                string passWord = inParameters.GetValue<string>("Password");
+                string user = inParameters.GetValue<string>("User");
+                string file = inParameters.GetValue<string>("File");
+                string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "\\");
+                FtpTypes ftpType = inParameters.GetValue<FtpTypes>("FtpType");
+
+                if (this.ftp == null)
                 {
-                    case FtpTypes.FTP:
-                        this.ftp = new Ftp();
-                        break;
+                    switch (ftpType)
+                    {
+                        case FtpTypes.FTP:
+                            this.ftp = new Ftp();
+                            break;
 
-                    case FtpTypes.FTPS:
-                        this.ftp = new FtpS();
-                        break;
+                        case FtpTypes.FTPS:
+                            this.ftp = new FtpS();
+                            break;
 
-                    case FtpTypes.SFTP:
-                        this.ftp = new SFtp();
-                        break;
+                        case FtpTypes.SFTP:
+                            this.ftp = new SFtp();
+                            break;
+                    }
                 }
+
+                this.ftp.SetConnectionInfos(host, user, passWord);
+
+                //this.ftp.SetConnectionInfos(this.ConnectionInfo.FtpServer, this.ConnectionInfo.UserName, this.ConnectionInfo.DecryptedPassword);
+
+                this.LogDebugFormat("Start writing files To Host='{0}', RemoteDirectory='{1}'", host, remoteDirectory);
+
+                this.WriteData(remoteDirectory, file);
+
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.SetOrAddValue("File", file);
+                yield return outParameters;
             }
-
-            this.ftp.SetConnectionInfos(host, user, passWord);
-
-            //this.ftp.SetConnectionInfos(this.ConnectionInfo.FtpServer, this.ConnectionInfo.UserName, this.ConnectionInfo.DecryptedPassword);
-
-            this.LogDebugFormat("Start writing files To Host='{0}', RemoteDirectory='{1}'", host, remoteDirectory);
-
-            this.WriteData(remoteDirectory, file);
-
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.SetOrAddValue("File", file);
-            yield return outParameters;
         }
 
         private void WriteData(string remoteDirectory, string localFileName)

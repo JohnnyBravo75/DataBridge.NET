@@ -53,32 +53,37 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("RemoveSourceFile", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string sourceFile = inParameters.GetValue<string>("SourceFile");
-            string targetDirectory = inParameters.GetValueOrDefault<string>("TargetDirectory", Path.Combine(Path.GetDirectoryName(sourceFile), @"\{yyyy}\{MM}\"));
-            string zipName = inParameters.GetValueOrDefault<string>("ZipName", Path.GetFileNameWithoutExtension(sourceFile) + ".zip");
-            string password = inParameters.GetValue<string>("Password");
-            bool removeSourceFile = inParameters.GetValueOrDefault<bool>("RemoveSourceFile", true);
-
-            zipName = TokenProcessor.ReplaceToken(zipName, "SourceFileName", Path.GetFileName(sourceFile));
-
-            DirectoryUtil.CreateDirectoryIfNotExists(targetDirectory);
-
-            var targetFile = Path.Combine(targetDirectory, zipName);
-            this.ZipFile(sourceFile, targetFile, password);
-
-            if (removeSourceFile)
+            foreach (var inParameters in inParametersList)
             {
-                File.Delete(sourceFile);
+                //inParameters = GetCurrentInParameters();
+                string sourceFile = inParameters.GetValue<string>("SourceFile");
+                string targetDirectory = inParameters.GetValueOrDefault<string>("TargetDirectory",
+                    Path.Combine(Path.GetDirectoryName(sourceFile), @"\{yyyy}\{MM}\"));
+                string zipName = inParameters.GetValueOrDefault<string>("ZipName",
+                    Path.GetFileNameWithoutExtension(sourceFile) + ".zip");
+                string password = inParameters.GetValue<string>("Password");
+                bool removeSourceFile = inParameters.GetValueOrDefault<bool>("RemoveSourceFile", true);
+
+                zipName = TokenProcessor.ReplaceToken(zipName, "SourceFileName", Path.GetFileName(sourceFile));
+
+                DirectoryUtil.CreateDirectoryIfNotExists(targetDirectory);
+
+                var targetFile = Path.Combine(targetDirectory, zipName);
+                this.ZipFile(sourceFile, targetFile, password);
+
+                if (removeSourceFile)
+                {
+                    File.Delete(sourceFile);
+                }
+
+                this.LogDebug(string.Format("Zipping archive='{0}'", targetFile));
+
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.SetOrAddValue("File", targetFile);
+                yield return outParameters;
             }
-
-            this.LogDebug(string.Format("Zipping archive='{0}'", targetFile));
-
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.SetOrAddValue("File", targetFile);
-            yield return outParameters;
         }
 
         private void ZipFile(string sourceFile, string targetFile, string password)

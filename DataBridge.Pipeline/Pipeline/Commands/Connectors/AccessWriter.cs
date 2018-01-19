@@ -3,8 +3,8 @@ using System.Data;
 using System.IO;
 using System.Xml.Serialization;
 using DataBridge.Common.Helper;
-using DataBridge.Handler.Services.Adapter;
 using DataBridge.Helper;
+using DataConnectors.Adapter.DbAdapter;
 
 namespace DataBridge.Commands
 {
@@ -43,29 +43,32 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("DeleteBefore", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("File");
-            string tableName = inParameters.GetValue<string>("Table");
-            object data = inParameters.GetValue<object>("Data");
-            bool deleteBefore = this.Parameters.GetValue<bool>("DeleteBefore");
-
-            DataTable table = null;
-            if (data is DataTable)
+            foreach (var inParameters in inParametersList)
             {
-                table = data as DataTable;
-            }
-            else if (data is DataSet)
-            {
-                table = (data as DataSet).Tables[0];
-            }
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("File");
+                string tableName = inParameters.GetValue<string>("Table");
+                object data = inParameters.GetValue<object>("Data");
+                bool deleteBefore = this.Parameters.GetValue<bool>("DeleteBefore");
 
-            this.WriteData(table, file, tableName, (this.IsFirstExecution && deleteBefore));
+                DataTable table = null;
+                if (data is DataTable)
+                {
+                    table = data as DataTable;
+                }
+                else if (data is DataSet)
+                {
+                    table = (data as DataSet).Tables[0];
+                }
 
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.SetOrAddValue("File", file);
-            yield return outParameters;
+                this.WriteData(table, file, tableName, (this.IsFirstExecution && deleteBefore));
+
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.SetOrAddValue("File", file);
+                yield return outParameters;
+            }
         }
 
         private void WriteData(DataTable table, string file, string tableName, bool deleteBefore = false)

@@ -71,7 +71,7 @@ namespace DataBridge.Commands
             return true;
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParameters)
         {
             var outParameters = this.GetCurrentOutParameters();
             outParameters.AddOrUpdate(new CommandParameter() { Name = "DeviceName", Value = this.DeviceName });

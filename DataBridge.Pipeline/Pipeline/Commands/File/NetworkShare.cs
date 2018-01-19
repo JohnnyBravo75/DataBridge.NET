@@ -51,35 +51,38 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("Mode", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string uncPath = inParameters.GetValue<string>("UNCPath");
-            string driveLetter = inParameters.GetValue<string>("DriveLetter");
-            string userName = inParameters.GetValue<string>("UserName");
-            string password = inParameters.GetValue<string>("Password");
-            var mode = inParameters.GetValue<WindowsNetwork.ConnectionModes>("Mode");
-
-            string errorMessage = string.Empty;
-
-            switch (mode)
+            foreach (var inParameters in inParametersList)
             {
-                case WindowsNetwork.ConnectionModes.Connect:
-                    errorMessage = WindowsNetwork.ConnectRemote(uncPath, userName, password, driveLetter);
-                    break;
+                //inParameters = GetCurrentInParameters();
+                string uncPath = inParameters.GetValue<string>("UNCPath");
+                string driveLetter = inParameters.GetValue<string>("DriveLetter");
+                string userName = inParameters.GetValue<string>("UserName");
+                string password = inParameters.GetValue<string>("Password");
+                var mode = inParameters.GetValue<WindowsNetwork.ConnectionModes>("Mode");
 
-                case WindowsNetwork.ConnectionModes.Disconnect:
-                    errorMessage = WindowsNetwork.DisconnectRemote(uncPath);
-                    break;
-            }
+                string errorMessage = string.Empty;
 
-            if (!string.IsNullOrEmpty(errorMessage))
-            {
-                throw new Exception(errorMessage);
+                switch (mode)
+                {
+                    case WindowsNetwork.ConnectionModes.Connect:
+                        errorMessage = WindowsNetwork.ConnectRemote(uncPath, userName, password, driveLetter);
+                        break;
+
+                    case WindowsNetwork.ConnectionModes.Disconnect:
+                        errorMessage = WindowsNetwork.DisconnectRemote(uncPath);
+                        break;
+                }
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    throw new Exception(errorMessage);
+                }
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.AddOrUpdate(new CommandParameter() { Name = "Drive", Value = driveLetter });
+                yield return outParameters;
             }
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.AddOrUpdate(new CommandParameter() { Name = "Drive", Value = driveLetter });
-            yield return outParameters;
         }
     }
 }

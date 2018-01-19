@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Xml.Serialization;
-using DataBridge.Handler.Services.Adapter;
+using DataConnectors.Adapter.DbAdapter;
 
 namespace DataBridge.Commands
 {
@@ -38,31 +38,34 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("Table", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("File");
-            string tableName = inParameters.GetValue<string>("Table");
-
-            this.accessAdapter.FileName = file;
-            this.accessAdapter.TableName = tableName;
-            this.accessAdapter.Connect();
-
-            this.LogDebugFormat("Start reading File='{0}'", file);
-
-            int rowIdx = 0;
-            foreach (DataTable table in this.accessAdapter.ReadData(this.MaxRowsToRead))
+            foreach (var inParameters in inParametersList)
             {
-                rowIdx += table.Rows.Count;
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("File");
+                string tableName = inParameters.GetValue<string>("Table");
 
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("Data", table);
-                outParameters.SetOrAddValue("DataName", table.TableName);
-                yield return outParameters;
+                this.accessAdapter.FileName = file;
+                this.accessAdapter.TableName = tableName;
+                this.accessAdapter.Connect();
+
+                this.LogDebugFormat("Start reading File='{0}'", file);
+
+                int rowIdx = 0;
+                foreach (DataTable table in this.accessAdapter.ReadData(this.MaxRowsToRead))
+                {
+                    rowIdx += table.Rows.Count;
+
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("Data", table);
+                    outParameters.SetOrAddValue("DataName", table.TableName);
+                    yield return outParameters;
+                }
+
+                this.LogDebugFormat("End reading File='{0}': Rows={1}", file, rowIdx);
+                this.accessAdapter.Disconnect();
             }
-
-            this.LogDebugFormat("End reading File='{0}': Rows={1}", file, rowIdx);
-            this.accessAdapter.Disconnect();
         }
 
         public override void Dispose()

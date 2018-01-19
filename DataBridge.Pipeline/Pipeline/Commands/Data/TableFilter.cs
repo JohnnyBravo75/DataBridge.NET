@@ -14,14 +14,17 @@ namespace DataBridge.Commands
             set { this.filterConditions = value; }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            DataTable srcTable = inParameters.GetValue<DataTable>("Data");
-            var tgtTable = this.FilterTable(srcTable);
+            foreach (var inParameters in inParametersList)
+            {
+                DataTable srcTable = inParameters.GetValue<DataTable>("Data");
+                var tgtTable = this.FilterTable(srcTable);
 
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.Add(new CommandParameter() { Name = "Data", Value = tgtTable });
-            yield return outParameters;
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.Add(new CommandParameter() { Name = "Data", Value = tgtTable });
+                yield return outParameters;
+            }
         }
 
         private DataTable FilterTable(DataTable srcTable)

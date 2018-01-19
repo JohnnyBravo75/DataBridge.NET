@@ -30,50 +30,53 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("Script", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string script = inParameters.GetValue<string>("Script");
-            string logFile = inParameters.GetValue<string>("OutputLogFile");
-
-            var parameters = new Dictionary<string, object>();
-
-            if (this.DataMappings.Any())
+            foreach (var inParameters in inParametersList)
             {
-                // Take the values, which are defined in the mapping
-                foreach (var dataMapping in this.DataMappings)
+                //inParameters = GetCurrentInParameters();
+                string script = inParameters.GetValue<string>("Script");
+                string logFile = inParameters.GetValue<string>("OutputLogFile");
+
+                var parameters = new Dictionary<string, object>();
+
+                if (this.DataMappings.Any())
                 {
-                    string parameterValue = "";
-
-                    if (dataMapping.Value != null)
+                    // Take the values, which are defined in the mapping
+                    foreach (var dataMapping in this.DataMappings)
                     {
-                        parameterValue = TokenProcessor.ReplaceTokens(dataMapping.Value.ToStringOrEmpty());
-                    }
-                    else
-                    {
-                        parameterValue = inParameters.GetValue<string>(dataMapping.Name);
-                    }
+                        string parameterValue = "";
 
-                    parameters.Add(dataMapping.Name, parameterValue);
+                        if (dataMapping.Value != null)
+                        {
+                            parameterValue = TokenProcessor.ReplaceTokens(dataMapping.Value.ToStringOrEmpty());
+                        }
+                        else
+                        {
+                            parameterValue = inParameters.GetValue<string>(dataMapping.Name);
+                        }
+
+                        parameters.Add(dataMapping.Name, parameterValue);
+                    }
                 }
-            }
-            else
-            {
-                parameters = inParameters.ToDictionary();
-            }
+                else
+                {
+                    parameters = inParameters.ToDictionary();
+                }
 
-            var shellOutput = this.powerShellAction.Run(script, parameters);
+                var shellOutput = this.powerShellAction.Run(script, parameters);
 
-            // log output to logfile
-            if (!string.IsNullOrEmpty(logFile) &&
-                !string.IsNullOrWhiteSpace(shellOutput))
-            {
-                System.IO.File.AppendAllText(logFile, shellOutput + Environment.NewLine);
+                // log output to logfile
+                if (!string.IsNullOrEmpty(logFile) &&
+                    !string.IsNullOrWhiteSpace(shellOutput))
+                {
+                    System.IO.File.AppendAllText(logFile, shellOutput + Environment.NewLine);
+                }
+
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.AddOrUpdate(new CommandParameter() { Name = "Output", Value = shellOutput });
+                yield return outParameters;
             }
-
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.AddOrUpdate(new CommandParameter() { Name = "Output", Value = shellOutput });
-            yield return outParameters;
         }
     }
 }

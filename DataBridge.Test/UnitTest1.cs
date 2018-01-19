@@ -6,10 +6,11 @@ using DataBridge.Commands;
 using DataBridge.Common.Helper;
 using DataBridge.ConnectionInfos;
 using DataBridge.Extensions;
-using DataBridge.Formatters;
 using DataBridge.Helper;
-using DataBridge.Models;
 using DataBridge.Services;
+using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
+using DataConnectors.Common.Model;
+using DataConnectors.Formatters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DataBridge.Test
@@ -30,30 +31,30 @@ namespace DataBridge.Test
 
         #region ******************************** File Tests ********************************
 
-        [TestMethod]
-        public void Test_ReadXml_WriteCsv_Address()
-        {
-            var testPipeline = new Pipeline();
+        //[TestMethod]
+        //public void Test_ReadXml_WriteCsv_Address()
+        //{
+        //    var testPipeline = new Pipeline();
 
-            var reader = new XmlFileReader()
-            {
-                File = this.testDataPath + @"GetAddressResponse.xml",
-                RowXPath = "/GetAddressResponse/GetAddressResult/result/address"
-            };
-            reader.Formatter = new XmlToDataTableFormatter() { UseAttributes = true };
-            testPipeline.Commands.Add(reader);
+        //    var reader = new XmlFileReader()
+        //    {
+        //        File = this.testDataPath + @"GetAddressResponse.xml",
+        //        RowXPath = "/GetAddressResponse/GetAddressResult/result/address"
+        //    };
+        //    reader.Formatter = new XmlToDataTableFormatter() { UseAttributes = true };
+        //    testPipeline.Commands.Add(reader);
 
-            var writer = new FlatFileWriter() { File = this.resultPath + @"flatxml.csv" };
-            writer.Formatter = new DataTableToCsvFormatter();
-            reader.AddChild(writer);
+        //    var writer = new FlatFileWriter() { File = this.resultPath + @"flatxml.csv" };
+        //    writer.Formatter = new DataTableToCsvFormatter();
+        //    reader.AddChild(writer);
 
-            testPipeline.ExecutePipeline();
+        //    testPipeline.ExecutePipeline();
 
-            // check
-            var targetlineCount = File.ReadLines(this.resultPath + @"flatxml.csv").Count();
+        //    // check
+        //    var targetlineCount = File.ReadLines(this.resultPath + @"flatxml.csv").Count();
 
-            Assert.AreEqual(3, targetlineCount);
-        }
+        //    Assert.AreEqual(3, targetlineCount);
+        //}
 
         [TestMethod]
         public void Test_ReadXml_WriteCsv_Kunden()
@@ -95,11 +96,9 @@ namespace DataBridge.Test
 
             //testPipeline.CommandHook = (cmd) =>
             //{
-
             //};
             testPipeline.OnExecuteCommand += (cmd) =>
             {
-
             };
 
             testPipeline.ExecutePipeline();
@@ -409,7 +408,6 @@ namespace DataBridge.Test
             reader.AddChild(writer);
             //testPipeline.OnExecuteCommand += (cmd) =>
             //{
-
             //};
             testPipeline.ExecutePipeline();
 
@@ -446,7 +444,6 @@ namespace DataBridge.Test
             emailer.AddChild(writer);
             testPipeline.OnExecuteCommand += delegate (DataCommand cmd)
             {
-
             };
             testPipeline.ExecutePipeline();
 
@@ -470,7 +467,6 @@ namespace DataBridge.Test
             var testPipeline = new Pipeline();
             testPipeline.Commands.Add(emailer);
             testPipeline.ExecutePipeline();
-
         }
 
         [TestMethod]
@@ -641,7 +637,5 @@ namespace DataBridge.Test
                 Assert.AreEqual(response, "<Message>Triggered successfull</Message>");
             }
         }
-
-
     }
 }

@@ -61,7 +61,7 @@ namespace DataBridge.Commands
             return true;
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParameters)
         {
             return base.Execute(inParameters);
         }

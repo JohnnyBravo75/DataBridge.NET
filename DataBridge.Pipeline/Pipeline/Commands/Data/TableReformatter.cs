@@ -27,19 +27,22 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("TableName", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            DataTable table = inParameters.GetValue<DataTable>("Data");
-            string tableName = inParameters.GetValue<string>("TableName");
-
-            if (table != null && table.TableName == tableName)
+            foreach (var inParameters in inParametersList)
             {
-                this.ReFormatTable(table);
-            }
+                DataTable table = inParameters.GetValue<DataTable>("Data");
+                string tableName = inParameters.GetValue<string>("TableName");
 
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.AddOrUpdate(new CommandParameter() { Name = "Data", Value = table });
-            yield return outParameters;
+                if (table != null && table.TableName == tableName)
+                {
+                    this.ReFormatTable(table);
+                }
+
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.AddOrUpdate(new CommandParameter() { Name = "Data", Value = table });
+                yield return outParameters;
+            }
         }
 
         private void ReFormatTable(DataTable table)

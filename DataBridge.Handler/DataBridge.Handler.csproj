@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DataBridge.Handler</RootNamespace>
     <AssemblyName>DataBridge.Handler</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,6 +58,9 @@
     <Reference Include="CronExpressionDescriptor, Version=1.21.2.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
       <HintPath>..\packages\CronExpressionDescriptor.1.21.2\lib\net45\CronExpressionDescriptor.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="DataConnectors">
+      <HintPath>..\Reference\DataConnectors\DataConnectors.dll</HintPath>
     </Reference>
     <Reference Include="DropBoxTokenIssuer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\AppLimit.CloudComputing.SharpBox.1.2.0.542\lib\net40-full\DropBoxTokenIssuer.exe</HintPath>
@@ -116,72 +120,14 @@
   <ItemGroup>
     <Compile Include="Core\Model\DataFieldAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Adapter\Base\DataAdapterBase.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\AccessAdapter.cs" />
-    <Compile Include="Services\Converters\Base\ValueConverterBase.cs" />
-    <Compile Include="Services\Converters\Base\ValueConverterFactory.cs" />
-    <Compile Include="Services\Converters\Base\ValueConvertProcessor.cs" />
-    <Compile Include="Services\Converters\DateTimeAutoDetectConverter.cs" />
-    <Compile Include="Services\Converters\DateTimeFormatConverter.cs" />
-    <Compile Include="Services\Converters\Model\ValueConverterAttribute.cs" />
-    <Compile Include="Services\Converters\Model\ValueConverterDefinition.cs" />
-    <Compile Include="Services\Converters\NumberAutoDetectConverter.cs" />
-    <Compile Include="Services\Converters\NumberFormatConverter.cs" />
     <Compile Include="Services\FolderSynchronizer\FtpFolderSynchronizer.cs" />
     <Compile Include="Services\FolderSynchronizer\FileFolderSynchronizer.cs" />
     <Compile Include="Services\FolderSynchronizer\FtpSyncOperations.cs" />
     <Compile Include="Services\FolderSynchronizer\FileSyncOperations.cs" />
     <Compile Include="Services\FolderSynchronizer\ISyncOperations.cs" />
-    <Compile Include="Services\ConnectionInfos\ConnectionInfoBase.cs" />
-    <Compile Include="Services\Adapter\FileAdapter\ConnectionInfos\ExcelConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\FileAdapter\ConnectionInfos\FileConnectionInfoBase.cs" />
     <Compile Include="Services\ConnectionInfos\FtpConnectionInfo.cs" />
     <Compile Include="Services\ConnectionInfos\SmtpConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\FileAdapter\Excel2007NativeAdapter.cs" />
-    <Compile Include="Services\Adapter\FileAdapter\ExcelNativeAdapter.cs" />
-    <Compile Include="Services\Adapter\Base\IDataAdapterBase.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\DbAdapter.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\Access2007ConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\FileAdapter\ConnectionInfos\FlatFileConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\DBaseConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\DbConnectionInfoBase.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\MySqlConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\OracleConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\PostgreSqlConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\SqLiteConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\AccessConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\ConnectionInfos\SqlServerConnectionInfo.cs" />
-    <Compile Include="Services\Adapter\DbAdapter\IDbAdapter.cs" />
     <Compile Include="Services\FolderSynchronizer\FolderSynchronizer.cs" />
-    <Compile Include="Services\Adapter\FileAdapter\FlatFileAdapter.cs" />
-    <Compile Include="Services\Adapter\FileAdapter\XPathAdapter.cs" />
-    <Compile Include="Services\Adapter\FileAdapter\XmlAdapter.cs" />
-    <Compile Include="Services\Formatters\CsvToDataTableFormatter.cs" />
-    <Compile Include="Services\Formatters\DataTableToCsvFormatter.cs" />
-    <Compile Include="Services\Formatters\DataTableToCustomPatternFormatter.cs" />
-    <Compile Include="Services\Formatters\DataTableToFixedLengthFormatter.cs" />
-    <Compile Include="Services\Formatters\DataTableToHtmlFormatter.cs" />
-    <Compile Include="Services\Formatters\DataTableToJsonFormatter.cs" />
-    <Compile Include="Services\Formatters\DataTableToSimpleXmlFormatter.cs" />
-    <Compile Include="Services\Formatters\DataTableToTemplateFormatter.cs" />
-    <Compile Include="Services\Formatters\DataTableToXPathFormatter.cs" />
-    <Compile Include="Services\Formatters\FlatFileToDataTableFormatter.cs" />
-    <Compile Include="Services\Formatters\DefaultFormatter.cs" />
-    <Compile Include="Services\Formatters\FixedLengthToDataTableFormatter.cs" />
-    <Compile Include="Services\Formatters\FormatterBase.cs" />
-    <Compile Include="Services\Formatters\JsonToDataTableFormatter.cs" />
-    <Compile Include="Services\Formatters\Model\FormatterOption.cs" />
-    <Compile Include="Services\Formatters\Model\FormatterOptions.cs" />
-    <Compile Include="Services\Formatters\Model\IHasXmlNameSpaces.cs" />
-    <Compile Include="Services\Formatters\Model\XmlNameSpace.cs" />
-    <Compile Include="Services\Formatters\Model\XPathMapping.cs" />
-    <Compile Include="Services\Formatters\Model\XPathMappingList.cs" />
-    <Compile Include="Services\Formatters\EventLogToDataTableFormatter.cs" />
-    <Compile Include="Services\Formatters\RegExToDataTableFormatter.cs" />
-    <Compile Include="Services\Formatters\XmlToDataSetFormatter.cs" />
-    <Compile Include="Services\Formatters\XmlToDataTableFormatter.cs" />
-    <Compile Include="Services\Formatters\XPathToDataTableFormatter.cs" />
-    <Compile Include="Services\Formatters\XslToDataTableFormatter.cs" />
     <Compile Include="Services\Ftp\Ftp.cs" />
     <Compile Include="Services\Ftp\FtpBase.cs" />
     <Compile Include="Services\Ftp\FtpFileInfo.cs" />
@@ -190,11 +136,7 @@
     <Compile Include="Services\Ftp\SFtp.cs" />
     <Compile Include="Services\Common\HttpServer.cs" />
     <Compile Include="Services\Common\NetworkShare.cs" />
-    <Compile Include="Core\Model\Field.cs" />
-    <Compile Include="Core\Model\FieldDefinition.cs" />
-    <Compile Include="Core\Model\FieldDefinitionList.cs" />
     <Compile Include="Services\Oracle\OracleNativeDbAdapter.cs" />
-    <Compile Include="Services\Oracle\OracleNativeConnectionInfo.cs" />
     <Compile Include="Services\Oracle\OracleTableWatcher.cs" />
     <Compile Include="Core\Model\Parameter.cs" />
     <Compile Include="Services\Scheduler\Quartz\ScheduleInfos\CronScheduleInfo.cs" />

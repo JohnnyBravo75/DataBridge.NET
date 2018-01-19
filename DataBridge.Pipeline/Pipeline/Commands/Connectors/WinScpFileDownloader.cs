@@ -68,56 +68,61 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("Protocol", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string host = inParameters.GetValue<string>("Host");
-            string passWord = inParameters.GetValue<string>("Password");
-            string user = inParameters.GetValue<string>("User");
-            string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "\\*.*");
-            string localDirectory = inParameters.GetValue<string>("LocalDirectory");
-            Protocol protocol = inParameters.GetValue<Protocol>("Protocol");
-            string sshHostKeyFingerprint = inParameters.GetValue<string>("SshHostKeyFingerprint");
-
-            this.LogDebugFormat("Start reading files from Host='{0}', RemoteDirectory='{1}', Mode='{2}'", host, remoteDirectory, protocol);
-
-            // Setup session options
-            var sessionOptions = new SessionOptions();
-            sessionOptions.Protocol = protocol;
-            sessionOptions.HostName = host;
-            sessionOptions.UserName = user;
-            sessionOptions.Password = passWord;
-            if (!string.IsNullOrEmpty(sshHostKeyFingerprint))
+            foreach (var inParameters in inParametersList)
             {
-                sessionOptions.SshHostKeyFingerprint = sshHostKeyFingerprint;
-            }
+                //inParameters = GetCurrentInParameters();
+                string host = inParameters.GetValue<string>("Host");
+                string passWord = inParameters.GetValue<string>("Password");
+                string user = inParameters.GetValue<string>("User");
+                string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "\\*.*");
+                string localDirectory = inParameters.GetValue<string>("LocalDirectory");
+                Protocol protocol = inParameters.GetValue<Protocol>("Protocol");
+                string sshHostKeyFingerprint = inParameters.GetValue<string>("SshHostKeyFingerprint");
 
-            using (var session = new Session())
-            {
-                // Connect
-                session.Open(sessionOptions);
+                this.LogDebugFormat("Start reading files from Host='{0}', RemoteDirectory='{1}', Mode='{2}'", host,
+                    remoteDirectory, protocol);
 
-                // Upload files
-                var transferOptions = new TransferOptions();
-                transferOptions.TransferMode = TransferMode.Binary;
-
-                var transferResult = session.GetFiles(remoteDirectory, localDirectory, false, transferOptions);
-
-                // Throw on any error
-                transferResult.Check();
-
-                int fileIdx = 0;
-                foreach (TransferEventArgs transfer in transferResult.Transfers)
+                // Setup session options
+                var sessionOptions = new SessionOptions();
+                sessionOptions.Protocol = protocol;
+                sessionOptions.HostName = host;
+                sessionOptions.UserName = user;
+                sessionOptions.Password = passWord;
+                if (!string.IsNullOrEmpty(sshHostKeyFingerprint))
                 {
-                    fileIdx++;
-
-                    var outParameters = this.GetCurrentOutParameters();
-                    outParameters.SetOrAddValue("File", transfer.FileName);
-
-                    yield return outParameters;
+                    sessionOptions.SshHostKeyFingerprint = sshHostKeyFingerprint;
                 }
 
-                this.LogDebugFormat("End reading files from Host='{0}', RemoteDirectory='{1}': FilesCount={2}", host, remoteDirectory, fileIdx);
+                using (var session = new Session())
+                {
+                    // Connect
+                    session.Open(sessionOptions);
+
+                    // Upload files
+                    var transferOptions = new TransferOptions();
+                    transferOptions.TransferMode = TransferMode.Binary;
+
+                    var transferResult = session.GetFiles(remoteDirectory, localDirectory, false, transferOptions);
+
+                    // Throw on any error
+                    transferResult.Check();
+
+                    int fileIdx = 0;
+                    foreach (TransferEventArgs transfer in transferResult.Transfers)
+                    {
+                        fileIdx++;
+
+                        var outParameters = this.GetCurrentOutParameters();
+                        outParameters.SetOrAddValue("File", transfer.FileName);
+
+                        yield return outParameters;
+                    }
+
+                    this.LogDebugFormat("End reading files from Host='{0}', RemoteDirectory='{1}': FilesCount={2}", host,
+                        remoteDirectory, fileIdx);
+                }
             }
         }
     }

@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Xml.Serialization;
-using DataBridge.ConnectionInfos;
 using DataBridge.Extensions;
-using DataBridge.Handler.Services.Adapter;
-using DataBridge.Services;
+using DataConnectors.Adapter.DbAdapter;
+using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
 
 namespace DataBridge.Commands
 {
@@ -51,32 +50,35 @@ namespace DataBridge.Commands
             }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string tableName = inParameters.GetValue<string>("TableName");
-            if (string.IsNullOrEmpty(tableName))
+            foreach (var inParameters in inParametersList)
             {
-                tableName = inParameters.GetValue<string>("DataName");
-            }
-            object data = inParameters.GetValue<object>("Data");
-            bool deleteBefore = this.Parameters.GetValue<bool>("DeleteBefore");
-
-            if (data is DataTable)
-            {
-                data = this.ConvertToDataSet(data);
-            }
-
-            if (data is DataSet)
-            {
-                foreach (DataTable table in (data as DataSet).Tables)
+                //inParameters = GetCurrentInParameters();
+                string tableName = inParameters.GetValue<string>("TableName");
+                if (string.IsNullOrEmpty(tableName))
                 {
-                    this.WriteData(table, tableName, (this.IsFirstExecution && deleteBefore));
+                    tableName = inParameters.GetValue<string>("DataName");
+                }
+                object data = inParameters.GetValue<object>("Data");
+                bool deleteBefore = this.Parameters.GetValue<bool>("DeleteBefore");
 
-                    var outParameters = this.GetCurrentOutParameters();
-                    outParameters.SetOrAddValue("Data", table);
-                    outParameters.SetOrAddValue("DataName", table.TableName);
-                    yield return outParameters;
+                if (data is DataTable)
+                {
+                    data = this.ConvertToDataSet(data);
+                }
+
+                if (data is DataSet)
+                {
+                    foreach (DataTable table in (data as DataSet).Tables)
+                    {
+                        this.WriteData(table, tableName, (this.IsFirstExecution && deleteBefore));
+
+                        var outParameters = this.GetCurrentOutParameters();
+                        outParameters.SetOrAddValue("Data", table);
+                        outParameters.SetOrAddValue("DataName", table.TableName);
+                        yield return outParameters;
+                    }
                 }
             }
         }

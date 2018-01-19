@@ -16,10 +16,9 @@ namespace DataBridge
 
         void Dispose();
 
-        IEnumerable<CommandParameters> ExecuteCommand(CommandParameters inParameters);
+        IEnumerable<CommandParameters> ExecuteCommand(IEnumerable<CommandParameters> inParameters);
 
         IList<string> Validate(CommandParameters parameters, ValidationContext context);
 
-        IEnumerable<CommandParameters> ValidateAndExecuteCommand(CommandParameters commandParameters);
     }
 }

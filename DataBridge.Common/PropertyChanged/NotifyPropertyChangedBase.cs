@@ -1,4 +1,6 @@
-﻿namespace DataBridge.PropertyChanged
+﻿using System.Xml.Serialization;
+
+namespace DataBridge.PropertyChanged
 {
     using System;
     using System.ComponentModel;
@@ -9,6 +11,7 @@
     /// <summary>
     /// Base class for items that implement property changed
     /// </summary>
+    [XmlType(Namespace = "NotifyPropertyChanged")]
     public class NotifyPropertyChangedBase : INotifyPropertyChanged
     {
         //System.Collections.Generic.List<PropertyChangedEventHandler> delegates = new System.Collections.Generic.List<PropertyChangedEventHandler>();

@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Xml.Serialization;
 using DataBridge.Extensions;
-using DataBridge.Formatters;
 using DataBridge.Services;
+using DataConnectors.Formatters;
 
 namespace DataBridge.Commands
 {
@@ -97,45 +97,47 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("SoapAction", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string serviceUrl = inParameters.GetValue<string>("Url");
-            string nameSpace = inParameters.GetValue<string>("Namespace");
-            string soapAction = inParameters.GetValue<string>("SoapAction");
-            string methodName = inParameters.GetValue<string>("MethodName");
-            string wsdlUrl = inParameters.GetValue<string>("Wsdl");
-            if (!string.IsNullOrEmpty(wsdlUrl))
+            foreach (var inParameters in inParametersList)
             {
-                var webServiceInfo = new WebServiceInfo(wsdlUrl);
-                serviceUrl = webServiceInfo.ServiceUrls.First();
-                var methodInfo = webServiceInfo.WebMethods.First(x => x.Name == methodName);
-                methodName = methodInfo.Name;
-                soapAction = methodInfo.Action;
-                nameSpace = methodInfo.TargetNamespace;
-
-                if (!this.DataMappings.Any())
+                //inParameters = GetCurrentInParameters();
+                string serviceUrl = inParameters.GetValue<string>("Url");
+                string nameSpace = inParameters.GetValue<string>("Namespace");
+                string soapAction = inParameters.GetValue<string>("SoapAction");
+                string methodName = inParameters.GetValue<string>("MethodName");
+                string wsdlUrl = inParameters.GetValue<string>("Wsdl");
+                if (!string.IsNullOrEmpty(wsdlUrl))
                 {
-                    foreach (Services.Parameter inputParam in methodInfo.InputParameters)
+                    var webServiceInfo = new WebServiceInfo(wsdlUrl);
+                    serviceUrl = webServiceInfo.ServiceUrls.First();
+                    var methodInfo = webServiceInfo.WebMethods.First(x => x.Name == methodName);
+                    methodName = methodInfo.Name;
+                    soapAction = methodInfo.Action;
+                    nameSpace = methodInfo.TargetNamespace;
+
+                    if (!this.DataMappings.Any())
                     {
-                        this.DataMappings.AddOrUpdate(new DataMapping()
+                        foreach (Services.Parameter inputParam in methodInfo.InputParameters)
                         {
-                            Name = inputParam.Name
-                        });
+                            this.DataMappings.AddOrUpdate(new DataMapping()
+                            {
+                                Name = inputParam.Name
+                            });
+                        }
                     }
                 }
-            }
 
+                string encodingName = inParameters.GetValueOrDefault<string>("EncodingName", "utf-8");
+                string passWord = inParameters.GetValue<string>("Password");
+                string user = inParameters.GetValue<string>("User");
 
-            string encodingName = inParameters.GetValueOrDefault<string>("EncodingName", "utf-8");
-            string passWord = inParameters.GetValue<string>("Password");
-            string user = inParameters.GetValue<string>("User");
-
-            foreach (var data in this.ReadData(serviceUrl, methodName, nameSpace, soapAction, encodingName, inParameters.ToDictionary()))
-            {
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("Data", data);
-                yield return outParameters;
+                foreach (var data in this.ReadData(serviceUrl, methodName, nameSpace, soapAction, encodingName, inParameters.ToDictionary()))
+                {
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("Data", data);
+                    yield return outParameters;
+                }
             }
         }
 
@@ -186,7 +188,5 @@ namespace DataBridge.Commands
 
             return data;
         }
-
-
     }
 }

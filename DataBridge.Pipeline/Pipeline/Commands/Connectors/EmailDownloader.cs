@@ -66,97 +66,104 @@ namespace DataBridge.Commands
             set { this.filterConditions = value; }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string host = inParameters.GetValue<string>("Host");
-            string user = inParameters.GetValue<string>("User");
-            string passWord = inParameters.GetValue<string>("Password");
-            int? port = inParameters.GetValue<int?>("Port");
-            bool enableSecure = inParameters.GetValue<bool>("EnableSecure");
-
-            if (!port.HasValue)
+            foreach (var inParameters in inParametersList)
             {
-                if (enableSecure)
+                //inParameters = GetCurrentInParameters();
+                string host = inParameters.GetValue<string>("Host");
+                string user = inParameters.GetValue<string>("User");
+                string passWord = inParameters.GetValue<string>("Password");
+                int? port = inParameters.GetValue<int?>("Port");
+                bool enableSecure = inParameters.GetValue<bool>("EnableSecure");
+
+                if (!port.HasValue)
                 {
-                    port = 995;
-                }
-                else
-                {
-                    port = 110;
-                }
-            }
-
-            this.pop3Client.Connect(host, port.Value, enableSecure);
-            this.pop3Client.Authenticate(user, passWord, AuthenticationMethod.UsernameAndPassword);
-
-            this.LogDebugFormat("Start reading emails from Host='{0}', User='{1}'", host, user);
-
-            int count = this.pop3Client.GetMessageCount();
-
-            this.LogDebugFormat("Found {0} emails", count);
-
-            int emailIdx = 0;
-            int emailDownloaded = 0;
-
-            for (int i = count; i >= 1; i--)
-            {
-                MessageHeader pop3MessageHeader = this.pop3Client.GetMessageHeaders(i);
-                emailIdx++;
-
-                this.ExecuteParameters.SetOrAddValue("EmailFrom", pop3MessageHeader.From.Address);
-                this.ExecuteParameters.SetOrAddValue("EmailTo", string.Join(",", pop3MessageHeader.To));
-                this.ExecuteParameters.SetOrAddValue("EmailSubject", pop3MessageHeader.Subject);
-                this.ExecuteParameters.SetOrAddValue("EmailDate", pop3MessageHeader.DateSent.ToString());
-
-                if (this.FilterConditions.IsNullOrEmpty() || ConditionEvaluator.CheckMatchingConditions(this.FilterConditions, this.ExecuteParameters.ToDictionary()))
-                {
-                    Message pop3Message = this.pop3Client.GetMessage(i);
-                    emailDownloaded++;
-
+                    if (enableSecure)
                     {
-                        // Body
-                        string bodyText = "";
-                        string bodyFileName = !string.IsNullOrEmpty(pop3Message.Headers.Subject)
-                                                        ? pop3Message.Headers.Subject
-                                                        : pop3Message.Headers.DateSent.ToStringOrEmpty();
+                        port = 995;
+                    }
+                    else
+                    {
+                        port = 110;
+                    }
+                }
 
-                        var body = pop3Message.FindFirstHtmlVersion();
-                        if (body != null)
+                this.pop3Client.Connect(host, port.Value, enableSecure);
+                this.pop3Client.Authenticate(user, passWord, AuthenticationMethod.UsernameAndPassword);
+
+                this.LogDebugFormat("Start reading emails from Host='{0}', User='{1}'", host, user);
+
+                int count = this.pop3Client.GetMessageCount();
+
+                this.LogDebugFormat("Found {0} emails", count);
+
+                int emailIdx = 0;
+                int emailDownloaded = 0;
+
+                for (int i = count; i >= 1; i--)
+                {
+                    MessageHeader pop3MessageHeader = this.pop3Client.GetMessageHeaders(i);
+                    emailIdx++;
+
+                    this.ExecuteParameters.SetOrAddValue("EmailFrom", pop3MessageHeader.From.Address);
+                    this.ExecuteParameters.SetOrAddValue("EmailTo", string.Join(",", pop3MessageHeader.To));
+                    this.ExecuteParameters.SetOrAddValue("EmailSubject", pop3MessageHeader.Subject);
+                    this.ExecuteParameters.SetOrAddValue("EmailDate", pop3MessageHeader.DateSent.ToString());
+
+                    if (this.FilterConditions.IsNullOrEmpty() ||
+                        ConditionEvaluator.CheckMatchingConditions(this.FilterConditions,
+                            this.ExecuteParameters.ToDictionary()))
+                    {
+                        Message pop3Message = this.pop3Client.GetMessage(i);
+                        emailDownloaded++;
+
                         {
-                            bodyText = body.GetBodyAsText();
-                            bodyFileName += ".html";
-                        }
-                        else
-                        {
-                            body = pop3Message.FindFirstPlainTextVersion();
+                            // Body
+                            string bodyText = "";
+                            string bodyFileName = !string.IsNullOrEmpty(pop3Message.Headers.Subject)
+                                ? pop3Message.Headers.Subject
+                                : pop3Message.Headers.DateSent.ToStringOrEmpty();
+
+                            var body = pop3Message.FindFirstHtmlVersion();
                             if (body != null)
                             {
                                 bodyText = body.GetBodyAsText();
-                                bodyFileName += ".txt";
+                                bodyFileName += ".html";
                             }
+                            else
+                            {
+                                body = pop3Message.FindFirstPlainTextVersion();
+                                if (body != null)
+                                {
+                                    bodyText = body.GetBodyAsText();
+                                    bodyFileName += ".txt";
+                                }
+                            }
+
+                            var outParameters = this.GetCurrentOutParameters();
+                            outParameters.SetOrAddValue("Data", bodyText);
+                            outParameters.SetOrAddValue("File", FileUtil.SanitizeFileName(bodyFileName));
+                            yield return outParameters;
                         }
 
-                        var outParameters = this.GetCurrentOutParameters();
-                        outParameters.SetOrAddValue("Data", bodyText);
-                        outParameters.SetOrAddValue("File", FileUtil.SanitizeFileName(bodyFileName));
-                        yield return outParameters;
-                    }
+                        // Attachments
+                        var attachments = pop3Message.FindAllAttachments();
 
-                    // Attachments
-                    var attachments = pop3Message.FindAllAttachments();
-
-                    foreach (var attachment in attachments)
-                    {
-                        var outParameters = this.GetCurrentOutParameters();
-                        outParameters.SetOrAddValue("Data", attachment.Body);
-                        outParameters.SetOrAddValue("File", FileUtil.SanitizeFileName(attachment.FileName));
-                        yield return outParameters;
+                        foreach (var attachment in attachments)
+                        {
+                            var outParameters = this.GetCurrentOutParameters();
+                            outParameters.SetOrAddValue("Data", attachment.Body);
+                            outParameters.SetOrAddValue("File", FileUtil.SanitizeFileName(attachment.FileName));
+                            yield return outParameters;
+                        }
                     }
                 }
-            }
 
-            this.LogDebugFormat("End reading emails from Host='{0}', User='{1}': EmailChecked={2}, EmailDownloaded={3}", host, user, emailIdx, emailDownloaded);
+                this.LogDebugFormat(
+                    "End reading emails from Host='{0}', User='{1}': EmailChecked={2}, EmailDownloaded={3}", host, user,
+                    emailIdx, emailDownloaded);
+            }
         }
     }
 }

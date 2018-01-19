@@ -1,8 +1,9 @@
-﻿namespace DMF.Data.DataAdapters
+﻿using DataConnectors.Common.Model;
+
+namespace DMF.Data.DataAdapters
 {
     using System.Collections.Generic;
     using System.Data;
-    using DataBridge.Models;
 
     public interface IImportDataAdapter
     {

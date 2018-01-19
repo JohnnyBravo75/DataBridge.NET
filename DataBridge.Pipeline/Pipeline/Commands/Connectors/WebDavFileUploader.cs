@@ -61,27 +61,31 @@ namespace DataBridge.Commands
             base.Initialize();
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("File");
-            string url = inParameters.GetValue<string>("Url");
-            string passWord = inParameters.GetValue<string>("Password");
-            string user = inParameters.GetValue<string>("User");
-            string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "/");
+            foreach (var inParameters in inParametersList)
+            {
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("File");
+                string url = inParameters.GetValue<string>("Url");
+                string passWord = inParameters.GetValue<string>("Password");
+                string user = inParameters.GetValue<string>("User");
+                string remoteDirectory = inParameters.GetValueOrDefault<string>("RemoteDirectory", "/");
 
-            var cloudConfig = CloudStorage.GetCloudConfigurationEasy(nSupportedCloudConfigurations.WebDav, new Uri(url));
-            var cloudCredentials = new GenericNetworkCredentials() { UserName = user, Password = passWord };
+                var cloudConfig = CloudStorage.GetCloudConfigurationEasy(nSupportedCloudConfigurations.WebDav,
+                    new Uri(url));
+                var cloudCredentials = new GenericNetworkCredentials() { UserName = user, Password = passWord };
 
-            this.cloudStorage.Open(cloudConfig, cloudCredentials);
+                this.cloudStorage.Open(cloudConfig, cloudCredentials);
 
-            this.WriteData(remoteDirectory, file);
+                this.WriteData(remoteDirectory, file);
 
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.SetOrAddValue("File", file);
-            yield return outParameters;
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.SetOrAddValue("File", file);
+                yield return outParameters;
 
-            this.cloudStorage.Close();
+                this.cloudStorage.Close();
+            }
         }
 
         private void WriteData(string remoteDirectory, string localFileName)

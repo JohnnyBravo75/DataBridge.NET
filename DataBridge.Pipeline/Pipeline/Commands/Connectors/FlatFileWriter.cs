@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Xml.Serialization;
-using DataBridge.Formatters;
-using DataBridge.Handler.Services.Adapter;
 using DataBridge.Helper;
+using DataConnectors.Adapter.FileAdapter;
+using DataConnectors.Formatters;
 
 namespace DataBridge.Commands
 {
@@ -48,39 +48,42 @@ namespace DataBridge.Commands
             set { this.fileAdapter.WriteFormatter = value; }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("File");
-            string encodingName = inParameters.GetValue<string>("EncodingName");
-            object data = inParameters.GetValue<object>("Data");
-            bool deleteBefore = this.Parameters.GetValue<bool>("DeleteBefore");
-
-            DataTable table = null;
-            if (data is DataTable)
+            foreach (var inParameters in inParametersList)
             {
-                table = data as DataTable;
-            }
-            else if (data is DataSet)
-            {
-                table = (data as DataSet).Tables[0];
-            }
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("File");
+                string encodingName = inParameters.GetValue<string>("EncodingName");
+                object data = inParameters.GetValue<object>("Data");
+                bool deleteBefore = this.Parameters.GetValue<bool>("DeleteBefore");
 
-            this.fileAdapter.FileName = file;
-            this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
+                DataTable table = null;
+                if (data is DataTable)
+                {
+                    table = data as DataTable;
+                }
+                else if (data is DataSet)
+                {
+                    table = (data as DataSet).Tables[0];
+                }
 
-            if (table != null)
-            {
-                this.fileAdapter.WriteAllData(table, (this.IsFirstExecution && deleteBefore));
-            }
-            else if (data is byte[])
-            {
-                this.fileAdapter.WriteBinaryData(data as byte[], (this.IsFirstExecution && deleteBefore));
-            }
+                this.fileAdapter.FileName = file;
+                this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
 
-            var outParameters = this.GetCurrentOutParameters();
-            outParameters.SetOrAddValue("File", file);
-            yield return outParameters;
+                if (table != null)
+                {
+                    this.fileAdapter.WriteAllData(table, (this.IsFirstExecution && deleteBefore));
+                }
+                else if (data is byte[])
+                {
+                    this.fileAdapter.WriteBinaryData(data as byte[], (this.IsFirstExecution && deleteBefore));
+                }
+
+                var outParameters = this.GetCurrentOutParameters();
+                outParameters.SetOrAddValue("File", file);
+                yield return outParameters;
+            }
         }
     }
 }

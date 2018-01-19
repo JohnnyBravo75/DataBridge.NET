@@ -47,12 +47,15 @@ namespace DataBridge.Commands
         {
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            this.matchingCondition = ConditionEvaluator.GetFirstMatchingCondition(this.CommandConditions, inParameters.ToDictionary()) as CommandCondition;
+            foreach (var inParameters in inParametersList)
+            {
+                this.matchingCondition = ConditionEvaluator.GetFirstMatchingCondition(this.CommandConditions, inParameters.ToDictionary()) as CommandCondition;
 
-            var outParameters = this.GetCurrentOutParameters();
-            yield return outParameters;
+                var outParameters = this.GetCurrentOutParameters();
+                yield return outParameters;
+            }
         }
     }
 }

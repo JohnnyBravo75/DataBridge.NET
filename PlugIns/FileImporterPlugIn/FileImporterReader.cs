@@ -4,9 +4,9 @@ using System.Data;
 using System.Xml.Serialization;
 using DataBridge.Common;
 using DataBridge.Extensions;
-using DataBridge.Formatters;
-using DataBridge.Handler.Services.Adapter;
 using DataBridge.Helper;
+using DataConnectors.Adapter.FileAdapter;
+using DataConnectors.Formatters;
 
 namespace DataBridge.Commands
 {
@@ -57,58 +57,61 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("ColumnPrefix", value); }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("File");
-            string encodingName = inParameters.GetValue<string>("EncodingName");
-            string tableName = inParameters.GetValue<string>("TableName");
-            string columnPrefix = inParameters.GetValue<string>("ColumnPrefix");
-
-            if (string.IsNullOrEmpty(encodingName))
+            foreach (var inParameters in inParametersList)
             {
-                this.AutoDetectSettings();
-                encodingName = this.EncodingName;
-            }
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("File");
+                string encodingName = inParameters.GetValue<string>("EncodingName");
+                string tableName = inParameters.GetValue<string>("TableName");
+                string columnPrefix = inParameters.GetValue<string>("ColumnPrefix");
 
-            this.LogDebugFormat("Start reading File='{0}'", file);
-
-            this.fileAdapter.FileName = file;
-            this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
-
-            var formatter = new FlatFileToDataTableFormatter();
-            formatter.ColumnName = columnPrefix + "_ROW";
-            this.fileAdapter.ReadFormatter = formatter;
-
-            int rowCount = 0;
-            foreach (var table in this.fileAdapter.ReadData(this.MaxRowsToRead))
-            {
-                table.TableName = tableName;
-
-                table.Columns.AddWhenNotExist(columnPrefix + "_ID", typeof(long));
-                table.Columns.AddWhenNotExist(columnPrefix + "_FILE_NAME", typeof(string));
-                table.Columns.AddWhenNotExist(columnPrefix + "_STATUS", typeof(string));
-                table.Columns.AddWhenNotExist(columnPrefix + "_TRANSFARE_DATE", typeof(DateTime));
-                table.Columns.AddWhenNotExist(columnPrefix + "_INSERT_DATE", typeof(DateTime));
-                table.Columns.AddWhenNotExist(columnPrefix + "_INSERT_USER", typeof(string));
-                table.Columns.AddWhenNotExist(columnPrefix + "_UPDATE_DATE", typeof(DateTime));
-                table.Columns.AddWhenNotExist(columnPrefix + "_UPDATE_USER", typeof(string));
-
-                foreach (DataRow row in table.Rows)
+                if (string.IsNullOrEmpty(encodingName))
                 {
-                    row[columnPrefix + "_FILE_NAME"] = this.fileAdapter.FileName;
-                    row[columnPrefix + "_STATUS"] = "pending";
+                    this.AutoDetectSettings();
+                    encodingName = this.EncodingName;
                 }
 
-                rowCount += table.Rows.Count;
+                this.LogDebugFormat("Start reading File='{0}'", file);
 
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("Data", table);
-                outParameters.SetOrAddValue("DataName", table.TableName);
-                yield return outParameters;
+                this.fileAdapter.FileName = file;
+                this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
+
+                var formatter = new FlatFileToDataTableFormatter();
+                formatter.ColumnName = columnPrefix + "_ROW";
+                this.fileAdapter.ReadFormatter = formatter;
+
+                int rowCount = 0;
+                foreach (var table in this.fileAdapter.ReadData(this.MaxRowsToRead))
+                {
+                    table.TableName = tableName;
+
+                    table.Columns.AddWhenNotExist(columnPrefix + "_ID", typeof(long));
+                    table.Columns.AddWhenNotExist(columnPrefix + "_FILE_NAME", typeof(string));
+                    table.Columns.AddWhenNotExist(columnPrefix + "_STATUS", typeof(string));
+                    table.Columns.AddWhenNotExist(columnPrefix + "_TRANSFARE_DATE", typeof(DateTime));
+                    table.Columns.AddWhenNotExist(columnPrefix + "_INSERT_DATE", typeof(DateTime));
+                    table.Columns.AddWhenNotExist(columnPrefix + "_INSERT_USER", typeof(string));
+                    table.Columns.AddWhenNotExist(columnPrefix + "_UPDATE_DATE", typeof(DateTime));
+                    table.Columns.AddWhenNotExist(columnPrefix + "_UPDATE_USER", typeof(string));
+
+                    foreach (DataRow row in table.Rows)
+                    {
+                        row[columnPrefix + "_FILE_NAME"] = this.fileAdapter.FileName;
+                        row[columnPrefix + "_STATUS"] = "pending";
+                    }
+
+                    rowCount += table.Rows.Count;
+
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("Data", table);
+                    outParameters.SetOrAddValue("DataName", table.TableName);
+                    yield return outParameters;
+                }
+
+                this.LogDebugFormat("End reading File='{0}': Rows={1}", file, rowCount);
             }
-
-            this.LogDebugFormat("End reading File='{0}': Rows={1}", file, rowCount);
         }
 
         public override IList<string> Validate(CommandParameters parameters, ValidationContext context)

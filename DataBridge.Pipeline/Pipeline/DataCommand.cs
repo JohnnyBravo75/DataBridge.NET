@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Xml.Serialization;
 using DataBridge.Extensions;
-using DataBridge.Helper;
 using DataBridge.PropertyChanged;
 
 namespace DataBridge
@@ -278,20 +277,13 @@ namespace DataBridge
             return this.OnSignalNext.Invoke(new InitializationResult(this, this.LoopCounter));
         }
 
-
         public virtual bool AfterExecute()
         {
             return true;
         }
 
-
-        public IEnumerable<CommandParameters> ExecuteCommand(CommandParameters inParameters)
+        public IEnumerable<CommandParameters> ExecuteCommand(IEnumerable<CommandParameters> inParameters)
         {
-            if (this.OnParametersIncoming != null)
-            {
-                this.OnParametersIncoming(inParameters);
-            }
-
             // try-catch only possible with outimplemented enumerator, not with foreach-yield
             //foreach (var param in this.Execute(inParameters))
             //{
@@ -325,7 +317,7 @@ namespace DataBridge
             }
         }
 
-        protected virtual IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected virtual IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParameters)
         {
             yield return this.GetCurrentOutParameters();
         }
@@ -694,17 +686,6 @@ namespace DataBridge
         public void LogErrorFormat(string logText, params object[] args)
         {
             LogManager.Instance.LogNamedErrorFormat(this.PipelineName, this.GetType(), logText, args);
-        }
-
-        public IEnumerable<CommandParameters> ValidateAndExecuteCommand(CommandParameters commandParameters)
-        {
-            var msgs = this.Validate(commandParameters, ValidationContext.Execution);
-            if (msgs.Any())
-            {
-                throw new Exception(this.GetType().Name + ": Validation error occured" + Environment.NewLine + string.Join(Environment.NewLine, msgs));
-            }
-
-            return this.ExecuteCommand(commandParameters);
         }
 
         protected void SetToken(string token, object value)

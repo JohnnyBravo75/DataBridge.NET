@@ -67,7 +67,7 @@ namespace DataBridge.Commands
             this.BeforeExecute();
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParameters)
         {
             this.LogDebug(string.Format("Triggering Interval='{0}'", this.Interval));
 

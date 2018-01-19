@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Serialization;
-using DataBridge.Formatters;
-using DataBridge.Handler.Services.Adapter;
 using DataBridge.Helper;
+using DataConnectors.Adapter.FileAdapter;
+using DataConnectors.Formatters;
 
 namespace DataBridge.Commands
 {
@@ -53,42 +53,45 @@ namespace DataBridge.Commands
             set { this.fileAdapter.ReadFormatter = value; }
         }
 
-        protected override IEnumerable<CommandParameters> Execute(CommandParameters inParameters)
+        protected override IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParametersList)
         {
-            //inParameters = GetCurrentInParameters();
-            string file = inParameters.GetValue<string>("File");
-            string encodingName = inParameters.GetValue<string>("EncodingName");
-            string fileTemplate = inParameters.GetValue<string>("FileTemplate");
-
-            if (!string.IsNullOrEmpty(fileTemplate))
+            foreach (var inParameters in inParametersList)
             {
-                var tokenValues = TokenProcessor.ParseTokenValues(file, fileTemplate);
-                this.SetTokens(tokenValues);
+                //inParameters = GetCurrentInParameters();
+                string file = inParameters.GetValue<string>("File");
+                string encodingName = inParameters.GetValue<string>("EncodingName");
+                string fileTemplate = inParameters.GetValue<string>("FileTemplate");
+
+                if (!string.IsNullOrEmpty(fileTemplate))
+                {
+                    var tokenValues = TokenProcessor.ParseTokenValues(file, fileTemplate);
+                    this.SetTokens(tokenValues);
+                }
+
+                this.fileAdapter.FileName = file;
+
+                if (string.IsNullOrEmpty(encodingName))
+                {
+                    this.AutoDetectSettings();
+                    encodingName = this.EncodingName;
+                }
+                this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
+
+                this.LogDebugFormat("Start reading File='{0}'", file);
+
+                int rowCount = 0;
+                foreach (var table in this.fileAdapter.ReadData(this.MaxRowsToRead))
+                {
+                    rowCount += table.Rows.Count;
+
+                    var outParameters = this.GetCurrentOutParameters();
+                    outParameters.SetOrAddValue("Data", table);
+                    outParameters.SetOrAddValue("DataName", table.TableName);
+                    yield return outParameters;
+                }
+
+                this.LogDebugFormat("End reading File='{0}': Rows={1}", file, rowCount);
             }
-
-            this.fileAdapter.FileName = file;
-
-            if (string.IsNullOrEmpty(encodingName))
-            {
-                this.AutoDetectSettings();
-                encodingName = this.EncodingName;
-            }
-            this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
-
-            this.LogDebugFormat("Start reading File='{0}'", file);
-
-            int rowCount = 0;
-            foreach (var table in this.fileAdapter.ReadData(this.MaxRowsToRead))
-            {
-                rowCount += table.Rows.Count;
-
-                var outParameters = this.GetCurrentOutParameters();
-                outParameters.SetOrAddValue("Data", table);
-                outParameters.SetOrAddValue("DataName", table.TableName);
-                yield return outParameters;
-            }
-
-            this.LogDebugFormat("End reading File='{0}': Rows={1}", file, rowCount);
         }
 
         public override IList<string> Validate(CommandParameters parameters, ValidationContext context)
