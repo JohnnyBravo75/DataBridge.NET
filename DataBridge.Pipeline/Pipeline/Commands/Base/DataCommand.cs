@@ -639,8 +639,12 @@ namespace DataBridge
             this.DeInitialize();
 
             this.OnSignalNext = null;
-            this.WeakPipeLine.SetTarget(null);
-            this.WeakPipeLine = null;
+
+            if (this.WeakPipeLine != null)
+            {
+                this.WeakPipeLine.SetTarget(null);
+                this.WeakPipeLine = null;
+            }
 
             if (this.commands != null)
             {

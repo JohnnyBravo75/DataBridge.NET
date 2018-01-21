@@ -59,21 +59,22 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_ReadXml_WriteCsv_Kunden()
         {
-            var testPipeline = new Pipeline();
-
-            var reader = new XmlFileReader()
+            using (var testPipeline = new Pipeline())
             {
-                File = this.testDataPath + @"kunden.xml",
-                RowXPath = "/adre/kunde"
-            };
-            reader.Formatter = new XPathToDataTableFormatter();
-            testPipeline.Commands.Add(reader);
+                var reader = new XmlFileReader()
+                {
+                    File = this.testDataPath + @"kunden.xml",
+                    RowXPath = "/adre/kunde"
+                };
+                reader.Formatter = new XPathToDataTableFormatter();
+                testPipeline.Commands.Add(reader);
 
-            var writer = new FlatFileWriter() { File = this.resultPath + @"kunden.csv" };
-            writer.Formatter = new DataTableToCsvFormatter();
-            reader.AddChild(writer);
+                var writer = new FlatFileWriter() { File = this.resultPath + @"kunden.csv" };
+                writer.Formatter = new DataTableToCsvFormatter();
+                reader.AddChild(writer);
 
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             var targetlineCount = File.ReadLines(this.resultPath + @"kunden.csv").Count();
@@ -84,24 +85,25 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_ReadCsv_WriteCsv_Cd()
         {
-            var testPipeline = new Pipeline();
-
-            var reader = new FlatFileReader() { File = this.testDataPath + @"cd2.csv" };
-            reader.Formatter = new CsvToDataTableFormatter() { Separator = ";" };
-            testPipeline.Commands.Add(reader);
-
-            var writer = new FlatFileWriter() { File = this.resultPath + @"cd2_copy.csv" };
-            writer.Formatter = new DataTableToCsvFormatter() { Separator = ";" };
-            reader.AddChild(writer);
-
-            //testPipeline.CommandHook = (cmd) =>
-            //{
-            //};
-            testPipeline.OnExecuteCommand += (cmd) =>
+            using (var testPipeline = new Pipeline())
             {
-            };
+                var reader = new FlatFileReader() { File = this.testDataPath + @"cd2.csv" };
+                reader.Formatter = new CsvToDataTableFormatter() { Separator = ";" };
+                testPipeline.Commands.Add(reader);
 
-            testPipeline.ExecutePipeline();
+                var writer = new FlatFileWriter() { File = this.resultPath + @"cd2_copy.csv" };
+                writer.Formatter = new DataTableToCsvFormatter() { Separator = ";" };
+                reader.AddChild(writer);
+
+                //testPipeline.CommandHook = (cmd) =>
+                //{
+                //};
+                testPipeline.OnExecuteCommand += (cmd) =>
+                {
+                };
+
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             var sourcelineCount = File.ReadLines(this.testDataPath + @"cd2.csv").Count();
@@ -136,24 +138,25 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_ReadFixedLength_WriteCsv_Fixed2()
         {
-            var testPipeline = new Pipeline();
+            using (var testPipeline = new Pipeline())
+            {
+                var looper = new FileLooper() { SourceDirectory = this.testDataPath, FileFilter = @"FixedText2.txt" };
+                testPipeline.Commands.Add(looper);
 
-            var looper = new FileLooper() { SourceDirectory = this.testDataPath, FileFilter = @"FixedText2.txt" };
-            testPipeline.Commands.Add(looper);
+                var formatter = new FixedLengthToDataTableFormatter();
+                formatter.FieldDefinitions.Add(new FieldDefinition(new Field("Header1", 15)));
+                formatter.FieldDefinitions.Add(new FieldDefinition(new Field("Header2", 25)));
+                formatter.FieldDefinitions.Add(new FieldDefinition(new Field("Header3", 10)));
 
-            var formatter = new FixedLengthToDataTableFormatter();
-            formatter.FieldDefinitions.Add(new FieldDefinition(new Field("Header1", 15)));
-            formatter.FieldDefinitions.Add(new FieldDefinition(new Field("Header2", 25)));
-            formatter.FieldDefinitions.Add(new FieldDefinition(new Field("Header3", 10)));
+                var reader = new FlatFileReader() { File = "{File}", Formatter = formatter };
+                looper.AddChild(reader);
 
-            var reader = new FlatFileReader() { File = "{File}", Formatter = formatter };
-            looper.AddChild(reader);
+                var writer = new FlatFileWriter() { File = this.resultPath + @"{FileName}" };
+                writer.Formatter = new DataTableToCsvFormatter();
+                reader.AddChild(writer);
 
-            var writer = new FlatFileWriter() { File = this.resultPath + @"{FileName}" };
-            writer.Formatter = new DataTableToCsvFormatter();
-            reader.AddChild(writer);
-
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             var sourcelineCount = File.ReadLines(this.testDataPath + @"FixedText2.txt").Count();
@@ -165,25 +168,26 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_ReadCsv_WriteFixedLength_Cd2()
         {
-            var testPipeline = new Pipeline();
+            using (var testPipeline = new Pipeline())
+            {
+                var looper = new FileLooper() { SourceDirectory = this.testDataPath, FileFilter = @"cd2.csv" };
+                testPipeline.Commands.Add(looper);
 
-            var looper = new FileLooper() { SourceDirectory = this.testDataPath, FileFilter = @"cd2.csv" };
-            testPipeline.Commands.Add(looper);
+                var reader = new FlatFileReader() { File = "{File}" };
+                reader.Formatter = new CsvToDataTableFormatter() { Separator = ";", Enclosure = "\"" };
+                looper.AddChild(reader);
 
-            var reader = new FlatFileReader() { File = "{File}" };
-            reader.Formatter = new CsvToDataTableFormatter() { Separator = ";", Enclosure = "\"" };
-            looper.AddChild(reader);
+                var formatter = new DataTableToFixedLengthFormatter();
+                formatter.FieldDefinitions.Add(new FieldDefinition(new Field("name", 15)));
+                formatter.FieldDefinitions.Add(new FieldDefinition(new Field("addr", 25)));
+                formatter.FieldDefinitions.Add(new FieldDefinition(new Field("telefon", 10)));
 
-            var formatter = new DataTableToFixedLengthFormatter();
-            formatter.FieldDefinitions.Add(new FieldDefinition(new Field("name", 15)));
-            formatter.FieldDefinitions.Add(new FieldDefinition(new Field("addr", 25)));
-            formatter.FieldDefinitions.Add(new FieldDefinition(new Field("telefon", 10)));
+                var writer = new FlatFileWriter() { File = this.resultPath + @"{FileName}" };
+                writer.Formatter = formatter;
+                reader.AddChild(writer);
 
-            var writer = new FlatFileWriter() { File = this.resultPath + @"{FileName}" };
-            writer.Formatter = formatter;
-            reader.AddChild(writer);
-
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             var sourcelineCount = File.ReadLines(this.testDataPath + @"cd2.csv").Count();
@@ -195,12 +199,13 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_FolderSync()
         {
-            var testPipeline = new Pipeline();
+            using (var testPipeline = new Pipeline())
+            {
+                var syncer = new FolderSync() { SourceDirectory = this.testDataPath, TargetDirectory = this.resultPath, FileFilter = @"*.txt" };
+                testPipeline.Commands.Add(syncer);
 
-            var syncer = new FolderSync() { SourceDirectory = this.testDataPath, TargetDirectory = this.resultPath, FileFilter = @"*.txt" };
-            testPipeline.Commands.Add(syncer);
-
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             var sourceFileCount = Directory.EnumerateFiles(this.testDataPath, "*.txt", SearchOption.TopDirectoryOnly).Count();
@@ -212,24 +217,25 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_ReadWriteCopyCsv()
         {
-            var testPipeline = new Pipeline();
+            using (var testPipeline = new Pipeline())
+            {
+                var looper = new FileLooper() { SourceDirectory = this.testDataPath, FileFilter = @"*.csv" };
+                testPipeline.Commands.Add(looper);
 
-            var looper = new FileLooper() { SourceDirectory = this.testDataPath, FileFilter = @"*.csv" };
-            testPipeline.Commands.Add(looper);
+                var reader = new FlatFileReader() { File = "{File}" };
+                reader.Formatter = new CsvToDataTableFormatter() { Separator = ";" };
+                looper.AddChild(reader);
 
-            var reader = new FlatFileReader() { File = "{File}" };
-            reader.Formatter = new CsvToDataTableFormatter() { Separator = ";" };
-            looper.AddChild(reader);
+                reader.AddChild(new TableFilter() { });
+                var writer = new FlatFileWriter() { File = this.resultPath + @"pipeline\{FileName}" };
+                writer.Formatter = new DataTableToCsvFormatter();
+                reader.AddChild(writer);
 
-            reader.AddChild(new TableFilter() { });
-            var writer = new FlatFileWriter() { File = this.resultPath + @"pipeline\{FileName}" };
-            writer.Formatter = new DataTableToCsvFormatter();
-            reader.AddChild(writer);
+                looper.AddChild(new FileMover() { SourceFile = @"{File}", TargetDirectory = this.resultPath + @"Archive", Mode = FileMover.FileMoveModes.Copy });
+                looper.AddChild(new FileZipper() { SourceFile = @"{File}", TargetDirectory = this.resultPath + @"Archive\Zipped", ZipName = "Archive_{yyyyMMdd}.zip", RemoveSourceFile = true });
 
-            looper.AddChild(new FileMover() { SourceFile = @"{File}", TargetDirectory = this.resultPath + @"Archive", Mode = FileMover.FileMoveModes.Copy });
-            looper.AddChild(new FileZipper() { SourceFile = @"{File}", TargetDirectory = this.resultPath + @"Archive\Zipped", ZipName = "Archive_{yyyyMMdd}.zip", RemoveSourceFile = true });
-
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             int sourceFileCount = Directory.GetFiles(this.testDataPath, @"*.csv", SearchOption.TopDirectoryOnly).Length;
@@ -297,21 +303,22 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_RestService_GetCountries()
         {
-            var testPipeline = new Pipeline();
-
-            var httpClient = new HttpClient()
+            using (var testPipeline = new Pipeline())
             {
-                Url = @"http://services.groupkt.com/country/get/all",
-                Formatter = new JsonToDataTableFormatter() { RowXPath = "/RestResponse/result" }
-            };
+                var httpClient = new HttpClient()
+                {
+                    Url = @"http://services.groupkt.com/country/get/all",
+                    Formatter = new JsonToDataTableFormatter() { RowXPath = "/RestResponse/result" }
+                };
 
-            testPipeline.Commands.Add(httpClient);
+                testPipeline.Commands.Add(httpClient);
 
-            var writer = new FlatFileWriter() { File = this.resultPath + @"allcountries.txt", DeleteBefore = true };
-            writer.Formatter = new DataTableToCsvFormatter() { Separator = ";" };
-            httpClient.AddChild(writer);
+                var writer = new FlatFileWriter() { File = this.resultPath + @"allcountries.txt", DeleteBefore = true };
+                writer.Formatter = new DataTableToCsvFormatter() { Separator = ";" };
+                httpClient.AddChild(writer);
 
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             var targetlineCount = File.ReadLines(this.resultPath + @"allcountries.txt").Count();
@@ -351,26 +358,27 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_Soap_ReadCustomerService()
         {
-            var testPipeline = new Pipeline();
-
-            var reader = new SoapClient()
+            using (var testPipeline = new Pipeline())
             {
-                Wsdl = "http://www.predic8.com:8080/crm/CustomerService?wsdl",
-                MethodName = "getAll",
-                Formatter = new XPathToDataTableFormatter() { RowXPath = "/getAllResponse/customer" }
-            };
+                var reader = new SoapClient()
+                {
+                    Wsdl = "http://www.predic8.com:8080/crm/CustomerService?wsdl",
+                    MethodName = "getAll",
+                    Formatter = new XPathToDataTableFormatter() { RowXPath = "/getAllResponse/customer" }
+                };
 
-            testPipeline.Commands.Add(reader);
+                testPipeline.Commands.Add(reader);
 
-            var writer = new FlatFileWriter()
-            {
-                File = this.resultPath + @"CustomerService.csv",
-                Formatter = new DataTableToCsvFormatter()
-            };
+                var writer = new FlatFileWriter()
+                {
+                    File = this.resultPath + @"CustomerService.csv",
+                    Formatter = new DataTableToCsvFormatter()
+                };
 
-            reader.AddChild(writer);
+                reader.AddChild(writer);
 
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             var targetlineCount = File.ReadLines(this.resultPath + @"CustomerService.csv").Count();
@@ -387,29 +395,31 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_Soap_ReadMedicareSupplier()
         {
-            var testPipeline = new Pipeline();
-
-            var reader = new SoapClient()
+            using (var testPipeline = new Pipeline())
             {
-                Wsdl = "http://www.webservicex.net/medicareSupplier.asmx?WSDL",
-                MethodName = "GetSupplierByCity",
-                Formatter = new XPathToDataTableFormatter() { RowXPath = "/GetSupplierByCityResponse/SupplierDataLists/SupplierDatas/SupplierData" }
-            };
-            reader.DataMappings.Add(new DataMapping() { Name = "City", Value = "Fort Worth" });
+                var reader = new SoapClient()
+                {
+                    Wsdl = "http://www.webservicex.net/medicareSupplier.asmx?WSDL",
+                    MethodName = "GetSupplierByCity",
+                    Formatter = new XPathToDataTableFormatter() { RowXPath = "/GetSupplierByCityResponse/SupplierDataLists/SupplierDatas/SupplierData" }
+                };
 
-            testPipeline.Commands.Add(reader);
+                reader.DataMappings.Add(new DataMapping() { Name = "City", Value = "Fort Worth" });
 
-            var writer = new FlatFileWriter()
-            {
-                File = this.resultPath + @"MedicareSupplier.csv",
-                Formatter = new DataTableToCsvFormatter()
-            };
+                testPipeline.Commands.Add(reader);
 
-            reader.AddChild(writer);
-            //testPipeline.OnExecuteCommand += (cmd) =>
-            //{
-            //};
-            testPipeline.ExecutePipeline();
+                var writer = new FlatFileWriter()
+                {
+                    File = this.resultPath + @"MedicareSupplier.csv",
+                    Formatter = new DataTableToCsvFormatter()
+                };
+
+                reader.AddChild(writer);
+                //testPipeline.OnExecuteCommand += (cmd) =>
+                //{
+                //};
+                testPipeline.ExecutePipeline();
+            }
 
             // check
             var targetlineCount = File.ReadLines(this.resultPath + @"MedicareSupplier.csv").Count();
@@ -428,24 +438,25 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_EmailDownloader()
         {
-            var testPipeline = new Pipeline();
-
-            var emailer = new EmailDownloader();
-            emailer.Host = "pop.gmx.de";
-            emailer.User = "";
-            emailer.Password = "";
-            emailer.EnableSecure = true;
-            emailer.FilterConditions.Add(new Condition() { Token = "EmailFrom", Operator = ConditionOperators.Contains, Value = "pearl" });
-
-            testPipeline.Commands.Add(emailer);
-
-            var writer = new FlatFileWriter() { File = this.resultPath + "{File}", DeleteBefore = true };
-            writer.Formatter = new DefaultFormatter();
-            emailer.AddChild(writer);
-            testPipeline.OnExecuteCommand += delegate (DataCommand cmd)
+            using (var testPipeline = new Pipeline())
             {
-            };
-            testPipeline.ExecutePipeline();
+                var emailer = new EmailDownloader();
+                emailer.Host = "pop.gmx.de";
+                emailer.User = "";
+                emailer.Password = "";
+                emailer.EnableSecure = true;
+                emailer.FilterConditions.Add(new Condition() { Token = "EmailFrom", Operator = ConditionOperators.Contains, Value = "pearl" });
+
+                testPipeline.Commands.Add(emailer);
+
+                var writer = new FlatFileWriter() { File = this.resultPath + "{File}", DeleteBefore = true };
+                writer.Formatter = new DefaultFormatter();
+                emailer.AddChild(writer);
+                testPipeline.OnExecuteCommand += delegate (DataCommand cmd)
+                {
+                };
+                testPipeline.ExecutePipeline();
+            }
 
             int emailFileCount = Directory.GetFiles(this.resultPath, @"*.html", SearchOption.TopDirectoryOnly).Length;
 
@@ -474,43 +485,45 @@ namespace DataBridge.Test
         {
             bool isBlackoutTest = true;
 
-            var testPipeline = new Pipeline();
-
-            var reader = new FlatFileReader() { File = this.testDataPath + @"cd2.csv" };
-            reader.Formatter = new CsvToDataTableFormatter() { Separator = ";" };
-            testPipeline.Commands.Add(reader);
-            bool result = true;
-            testPipeline.OnExecutionCanceled += (sender, args) =>
+            bool result;
+            using (var testPipeline = new Pipeline())
             {
-                if (isBlackoutTest)
+                var reader = new FlatFileReader() { File = this.testDataPath + @"cd2.csv" };
+                reader.Formatter = new CsvToDataTableFormatter() { Separator = ";" };
+                testPipeline.Commands.Add(reader);
+                result = true;
+                testPipeline.OnExecutionCanceled += (sender, args) =>
                 {
-                    if (args.Result == "Blackout")
+                    if (isBlackoutTest)
+                    {
+                        if (args.Result == "Blackout")
+                        {
+                            // ok
+                            result = false;
+                        }
+                    }
+                    else
                     {
                         // ok
-                        result = false;
+                        result = true;
                     }
-                }
-                else
-                {
-                    // ok
-                    result = true;
-                }
-            };
+                };
 
-            // set blackout to current
-            testPipeline.BlackoutStart = DateTime.Now.Subtract(new TimeSpan(1, 0, 0));
-            testPipeline.BlackoutEnd = DateTime.Now.Add(new TimeSpan(1, 0, 0));
+                // set blackout to current
+                testPipeline.BlackoutStart = DateTime.Now.Subtract(new TimeSpan(1, 0, 0));
+                testPipeline.BlackoutEnd = DateTime.Now.Add(new TimeSpan(1, 0, 0));
 
-            result = testPipeline.ExecutePipeline();
+                result = testPipeline.ExecutePipeline();
 
-            // check
-            Assert.IsFalse(result);
+                // check
+                Assert.IsFalse(result);
 
-            // set blackout to another time
-            testPipeline.BlackoutStart = DateTime.Now.Subtract(new TimeSpan(2, 0, 0));
-            testPipeline.BlackoutEnd = DateTime.Now.Subtract(new TimeSpan(1, 0, 0));
+                // set blackout to another time
+                testPipeline.BlackoutStart = DateTime.Now.Subtract(new TimeSpan(2, 0, 0));
+                testPipeline.BlackoutEnd = DateTime.Now.Subtract(new TimeSpan(1, 0, 0));
 
-            result = testPipeline.ExecutePipeline();
+                result = testPipeline.ExecutePipeline();
+            }
 
             // check
             Assert.IsTrue(result);
@@ -519,112 +532,117 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_TableFilter()
         {
-            var testPipeline = new Pipeline();
-
-            var reader = new FlatFileReader() { File = this.testDataPath + @"cd2.csv" };
-            reader.Formatter = new CsvToDataTableFormatter() { Separator = ";", Enclosure = "\"" };
-            testPipeline.Commands.Add(reader);
-
-            var filter = new TableFilter();
-            filter.FilterConditions.Add(new Condition() { Token = "name", Operator = ConditionOperators.Contains, Value = "restaur" });
-            reader.AddChild(filter);
-
-            var writer = new FlatFileWriter() { File = this.resultPath + "{File}" };
-            writer.Formatter = new DataTableToCsvFormatter() { Separator = ";" };
-            reader.AddChild(writer);
-
-            var result = testPipeline.ValidatePipeline();
-            if (result.Any())
+            using (var testPipeline = new Pipeline())
             {
-                throw new ArgumentException(string.Join(Environment.NewLine, result));
-            }
+                var reader = new FlatFileReader() { File = this.testDataPath + @"cd2.csv" };
+                reader.Formatter = new CsvToDataTableFormatter() { Separator = ";", Enclosure = "\"" };
+                testPipeline.Commands.Add(reader);
 
-            testPipeline.ExecutePipeline();
+                var filter = new TableFilter();
+                filter.FilterConditions.Add(new Condition() { Token = "name", Operator = ConditionOperators.Contains, Value = "restaur" });
+                reader.AddChild(filter);
+
+                var writer = new FlatFileWriter() { File = this.resultPath + "{File}" };
+                writer.Formatter = new DataTableToCsvFormatter() { Separator = ";" };
+                reader.AddChild(writer);
+
+                var result = testPipeline.ValidatePipeline();
+                if (result.Any())
+                {
+                    throw new ArgumentException(string.Join(Environment.NewLine, result));
+                }
+
+                testPipeline.ExecutePipeline();
+            }
         }
 
         [TestMethod]
         public void Test_SqlTableExport()
         {
-            var testPipeline = new Pipeline() { StreamingBlockSize = 20 };
-
-            var looper = new ValueLooper();
-            looper.ValueItems.Add(new ValueItem()
+            using (var testPipeline = new Pipeline() { StreamingBlockSize = 20 })
             {
-                new Parameter() { Name = "TableName", Value = "mis.tb_companies" }
-            });
+                var looper = new ValueLooper();
+                looper.ValueItems.Add(new ValueItem()
+                {
+                    new Parameter() { Name = "TableName", Value = "mis.tb_companies" }
+                });
 
-            looper.ValueItems.Add(new ValueItem()
-            {
-                new Parameter() { Name = "TableName", Value = "mis.tb_persons" }
-            });
+                looper.ValueItems.Add(new ValueItem()
+                {
+                    new Parameter() { Name = "TableName", Value = "mis.tb_persons" }
+                });
 
-            testPipeline.Commands.Add(looper);
+                testPipeline.Commands.Add(looper);
 
-            var sqlReader = new SqlDataReader()
-            {
-                ConnectionInfo = new OracleNativeDbConnectionInfo() { UserName = "", Password = "", Database = "ORACLE01", Host = "COMPUTER01" },
-                SqlTemplate = " SELECT * FROM {TableName} WHERE ROWNUM <= 100 "
-            };
+                var sqlReader = new SqlDataReader()
+                {
+                    ConnectionInfo = new OracleNativeDbConnectionInfo() { UserName = "", Password = "", Database = "ORACLE01", Host = "COMPUTER01" },
+                    SqlTemplate = " SELECT * FROM {TableName} WHERE ROWNUM <= 100 "
+                };
 
-            looper.AddChild(sqlReader);
+                looper.AddChild(sqlReader);
 
-            sqlReader.AddChild(new Excel2007Writer()
-            {
-                File = this.resultPath + @"{TableName}.xlsx",
-                DeleteBefore = true
-            });
+                sqlReader.AddChild(new Excel2007Writer()
+                {
+                    File = this.resultPath + @"{TableName}.xlsx",
+                    DeleteBefore = true
+                });
 
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
         }
 
         [TestMethod]
         public void Test_SqlTableImport()
         {
-            var testPipeline = new Pipeline() { StreamingBlockSize = 20 };
-            var looper = new FileLooper() { SourceDirectory = this.resultPath, FileFilter = "mis.*.txt" };
-
-            testPipeline.Commands.Add(looper);
-
-            var reader = new FlatFileReader()
+            using (var testPipeline = new Pipeline() { StreamingBlockSize = 20 })
             {
-                File = "{File}",
-                Formatter = new CsvToDataTableFormatter() { Separator = ";" }
-            };
+                var looper = new FileLooper() { SourceDirectory = this.resultPath, FileFilter = "mis.*.txt" };
 
-            looper.AddChild(reader);
+                testPipeline.Commands.Add(looper);
 
-            var tableWriter = new DbTableWriter
-            {
-                ConnectionInfo = new OracleNativeDbConnectionInfo() { UserName = "", Password = "", Database = "ORACLE01", Host = "COMPUTER01" },
-                DeleteBefore = false,
-                TableName = "{DataName}_bak"
-            };
+                var reader = new FlatFileReader()
+                {
+                    File = "{File}",
+                    Formatter = new CsvToDataTableFormatter() { Separator = ";" }
+                };
 
-            reader.AddChild(tableWriter);
+                looper.AddChild(reader);
 
-            testPipeline.ExecutePipeline();
+                var tableWriter = new DbTableWriter
+                {
+                    ConnectionInfo = new OracleNativeDbConnectionInfo() { UserName = "", Password = "", Database = "ORACLE01", Host = "COMPUTER01" },
+                    DeleteBefore = false,
+                    TableName = "{DataName}_bak"
+                };
+
+                reader.AddChild(tableWriter);
+
+                testPipeline.ExecutePipeline();
+            }
         }
 
         [TestMethod]
         public void Test_HttpTrigger()
         {
-            var testPipeline = new Pipeline();
-
-            var httpTrigger = new HttpTrigger()
+            using (var testPipeline = new Pipeline())
             {
-                Port = 8080,
-                UseAuthentication = true,
-                User = "Hello",
-                Password = "World"
-            };
+                var httpTrigger = new HttpTrigger()
+                {
+                    Port = 8080,
+                    UseAuthentication = true,
+                    User = "Hello",
+                    Password = "World"
+                };
 
-            testPipeline.Commands.Add(httpTrigger);
+                testPipeline.Commands.Add(httpTrigger);
 
-            var writer = new FlatFileWriter() { File = this.resultPath + @"http-parameter.txt", DeleteBefore = false };
-            writer.Formatter = new DataTableToCsvFormatter() { Separator = ";" };
-            httpTrigger.AddChild(writer);
+                var writer = new FlatFileWriter() { File = this.resultPath + @"http-parameter.txt", DeleteBefore = false };
+                writer.Formatter = new DataTableToCsvFormatter() { Separator = ";" };
+                httpTrigger.AddChild(writer);
 
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
+            }
 
             using (var webClient = new WebClient())
             {

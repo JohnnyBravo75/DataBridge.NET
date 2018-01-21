@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Xml.Serialization;
 using DataBridge.Extensions;
 using DataBridge.Helper;
@@ -20,18 +19,30 @@ namespace DataBridge
         private int streamingBlockSize = 100000;
         private string name = "";
         private string workingDirectory = @".\";
+        private IPipelineExecuter executer;
 
         // ************************************ Constructor **********************************************
+
         public Pipeline()
         {
+            this.executer = new PipelineExecuter(this);
+            this.executer.OnExecuteCommand += this.Executer_OnExecuteCommand;
+            this.executer.OnExecutionCanceled += this.Executer_OnExecutionCanceled;
         }
 
         public Pipeline(string name)
         {
+            this.executer = new PipelineExecuter(this);
+            this.executer.OnExecuteCommand += this.Executer_OnExecuteCommand;
+            this.executer.OnExecutionCanceled += this.Executer_OnExecutionCanceled;
             this.Name = name;
         }
 
         // ************************************ Properties **********************************************
+
+        public event Action<DataCommand> OnExecuteCommand;
+
+        public event EventHandler<EventArgs<string>> OnExecutionCanceled;
 
         [XmlArray("Commands", IsNullable = false)]
         public List<DataCommand> Commands
@@ -168,6 +179,11 @@ namespace DataBridge
             pipeline.ExecutePipeline();
         }
 
+        public bool ExecutePipeline(CommandParameters inParameters = null)
+        {
+            return executer.ExecutePipeline(inParameters);
+        }
+
         public void StopPipeline()
         {
             //LogManager.Instance.LogDebugFormat(this.GetType(), "Deinitialize pipeline '{0}'", this.Name);
@@ -176,122 +192,6 @@ namespace DataBridge
             {
                 command.DeInitialize();
             }
-        }
-
-        public event Action<DataCommand> OnExecuteCommand;
-
-        public event EventHandler<EventArgs<string>> OnExecutionCanceled;
-
-        protected bool ExecuteCommand(DataCommand currentCmd, int loopCounter, DataCommand previousCmd = null)
-        {
-            try
-            {
-                if (this.IsInBlackout)
-                {
-                    LogManager.Instance.LogNamedDebugFormat(this.Name, this.GetType(), "Blackout detected. Ignoring execution of pipeline '{0}'", this.Name);
-                    if (this.OnExecutionCanceled != null)
-                    {
-                        this.OnExecutionCanceled(this, new EventArgs<string>("Blackout"));
-                    }
-                    return false;
-                }
-
-                if (currentCmd != null)
-                {
-                    // Execute the currentCmd command as often as possible and pull the parameters out and push them into the next command
-                    int i = 0;
-                    CommandParameters lastParameter = null;
-                    TokenManager.Instance.SetTokens(currentCmd.ExecuteParameters.ToDictionary(), this.Name);
-
-                    var commandParametersList = new List<CommandParameters> { currentCmd.ExecuteParameters };
-                    foreach (CommandParameters outParameters in currentCmd.ExecuteCommand(commandParametersList))
-                    {
-                        if (this.OnExecuteCommand != null)
-                        {
-                            this.OnExecuteCommand(currentCmd);
-                        }
-
-                        if (currentCmd.HasChildCommands)
-                        {
-                            // execute the childs
-                            var nextChildCmd = currentCmd.GetFirstChild();
-                            if (nextChildCmd != null)
-                            {
-                                if (i == 0)
-                                {
-                                    if (!nextChildCmd.IsInitialized)
-                                    {
-                                        nextChildCmd.Initialize();
-                                        nextChildCmd.UseStreaming = this.UseStreaming;
-                                        nextChildCmd.StreamingBlockSize = this.StreamingBlockSize;
-                                    }
-                                }
-
-                                nextChildCmd.SetParameters(outParameters, this.OnSignalExecution, currentCmd);
-                                nextChildCmd.LoopCounter = i;
-                                nextChildCmd.BeforeExecute();
-                            }
-                        }
-
-                        lastParameter = outParameters;
-
-                        i++;
-                    }
-
-                    currentCmd.AfterExecute();
-
-                    // execute the siblings
-                    var nextSiblingCmd = currentCmd.GetNextSibling();
-                    if (nextSiblingCmd != null)
-                    {
-                        if (!nextSiblingCmd.IsInitialized)
-                        {
-                            nextSiblingCmd.Initialize();
-                            nextSiblingCmd.UseStreaming = this.UseStreaming;
-                            nextSiblingCmd.StreamingBlockSize = this.StreamingBlockSize;
-                        }
-
-                        if (lastParameter == null)
-                        {
-                            lastParameter = currentCmd.GetCurrentOutParameters();
-                        }
-                        nextSiblingCmd.SetParameters(lastParameter, this.OnSignalExecution, currentCmd);
-                        nextSiblingCmd.LoopCounter = loopCounter;
-                        nextSiblingCmd.BeforeExecute();
-                    }
-                }
-            }
-            catch (ThreadAbortException ex)
-            {
-                // ignore them
-            }
-            catch (ThreadInterruptedException ex)
-            {
-                // ignore them
-            }
-            return true;
-        }
-
-        protected bool OnSignalExecution(InitializationResult initializationResult)
-        {
-            var currentCmd = initializationResult.Command;
-            return this.ExecuteCommand(currentCmd, initializationResult.LoopCounter, initializationResult.PrevCommand);
-        }
-
-        public bool ExecutePipeline(CommandParameters inParameters = null)
-        {
-            var startCommand = this.Commands.FirstOrDefault();
-            if (startCommand == null)
-            {
-                throw new Exception(string.Format("No Commands in pipeline '{0}'", this.Name));
-            }
-
-            startCommand.Initialize();
-            startCommand.UseStreaming = this.UseStreaming;
-            startCommand.StreamingBlockSize = this.StreamingBlockSize;
-            startCommand.SetParameters(inParameters, this.OnSignalExecution);
-
-            return startCommand.BeforeExecute();
         }
 
         public List<string> ValidatePipeline()
@@ -322,6 +222,13 @@ namespace DataBridge
 
                 this.commands.Clear();
             }
+
+            if (this.executer != null)
+            {
+                this.executer.OnExecuteCommand -= this.Executer_OnExecuteCommand;
+                this.executer.OnExecutionCanceled -= this.Executer_OnExecutionCanceled;
+                this.executer = null;
+            }
         }
 
         public bool Equals(Pipeline other)
@@ -349,6 +256,22 @@ namespace DataBridge
         public override int GetHashCode()
         {
             return (this.Name != null ? this.Name.GetHashCode() : 0);
+        }
+
+        private void Executer_OnExecutionCanceled(object sender, EventArgs<string> e)
+        {
+            if (this.OnExecutionCanceled != null)
+            {
+                this.OnExecutionCanceled(sender, e);
+            }
+        }
+
+        private void Executer_OnExecuteCommand(DataCommand dataCommand)
+        {
+            if (this.OnExecuteCommand != null)
+            {
+                this.OnExecuteCommand(dataCommand);
+            }
         }
     }
 }
