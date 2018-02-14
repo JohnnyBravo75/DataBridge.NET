@@ -61,7 +61,6 @@ namespace DataBridge
             }
         }
 
-
         public object GetEvaluatedValue(IDictionary<string, object> contextTokens = null)
         {
             var value = this.Value;
@@ -173,17 +172,24 @@ namespace DataBridge
 
         public bool ShouldSerializeDirection()
         {
-            return this.Direction != Directions.InOut;
+            return true;
+            // return this.Direction != Directions.InOut;
         }
 
         public bool ShouldSerializeNotNull()
         {
-            return this.NotNull;
+            return true;
+            // return this.NotNull;
         }
 
         public bool ShouldSerializeUseEncryption()
         {
             return this.UseEncryption;
+        }
+
+        public bool ShouldSerializeIsValueExpression()
+        {
+            return this.IsValueExpression;
         }
     }
 

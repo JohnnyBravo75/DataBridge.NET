@@ -17,7 +17,7 @@ namespace DataBridge.Commands
             this.Parameters.Add(new CommandParameter() { Name = "Host", Direction = Directions.In, NotNull = true });
             this.Parameters.Add(new CommandParameter() { Name = "Password", Direction = Directions.In, UseEncryption = true });
             this.Parameters.Add(new CommandParameter() { Name = "User", Direction = Directions.In });
-            this.Parameters.Add(new CommandParameter() { Name = "File" });
+            this.Parameters.Add(new CommandParameter() { Name = "File", Direction = Directions.InOut });
             this.Parameters.Add(new CommandParameter() { Name = "RemoteDirectory" });
             this.Parameters.Add(new CommandParameter() { Name = "FtpType", Direction = Directions.In, Value = FtpTypes.FTP });
         }
