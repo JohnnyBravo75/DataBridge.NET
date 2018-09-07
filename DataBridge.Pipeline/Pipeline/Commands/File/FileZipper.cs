@@ -59,10 +59,8 @@ namespace DataBridge.Commands
             {
                 //inParameters = GetCurrentInParameters();
                 string sourceFile = inParameters.GetValue<string>("SourceFile");
-                string targetDirectory = inParameters.GetValueOrDefault<string>("TargetDirectory",
-                    Path.Combine(Path.GetDirectoryName(sourceFile), @"\{yyyy}\{MM}\"));
-                string zipName = inParameters.GetValueOrDefault<string>("ZipName",
-                    Path.GetFileNameWithoutExtension(sourceFile) + ".zip");
+                string targetDirectory = inParameters.GetValueOrDefault<string>("TargetDirectory", Path.Combine(Path.GetDirectoryName(sourceFile), @"\{yyyy}\{MM}\"));
+                string zipName = inParameters.GetValueOrDefault<string>("ZipName", Path.GetFileNameWithoutExtension(sourceFile) + ".zip");
                 string password = inParameters.GetValue<string>("Password");
                 bool removeSourceFile = inParameters.GetValueOrDefault<bool>("RemoveSourceFile", true);
 

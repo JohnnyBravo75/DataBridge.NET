@@ -97,14 +97,26 @@ namespace DataBridge.Extensions
         /// <returns></returns>
         public static T GetAttributeValue<T>(this XElement element, string name, T defaultValue = default(T))
         {
-            XAttribute attribute = element.Attribute(XName.Get(name));
+            XAttribute xAttribute = element.Attribute(XName.Get(name));
 
-            if (attribute == null)
+            if (xAttribute == null)
             {
                 return defaultValue;
             }
 
-            return ConvertExtensions.ConvertTo<T>(attribute.Value);
+            if (typeof(T) == typeof(bool))
+            {
+                object objvalue;
+                bool boolValue;
+                Boolean.TryParse(xAttribute.Value.ToLower(), out boolValue);
+                objvalue = boolValue;
+                return (T)objvalue;
+
+                //object value = XmlConvert.ToBoolean(xAttribute.Value);
+                //return (T)value;
+            }
+
+            return ConvertExtensions.ConvertTo<T>(xAttribute.Value);
         }
 
         /// <summary>
