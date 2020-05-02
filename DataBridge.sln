@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29911.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBridge.Pipeline", "DataBridge.Pipeline\DataBridge.Pipeline.csproj", "{17F0FB26-CE8D-4160-AECC-79D1156FA27D}"
 EndProject
@@ -34,6 +34,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBridge.TrayNotifier", "DataBridge.TrayNotifier\DataBridge.TrayNotifier.csproj", "{6161801F-BE62-41C4-A445-CB43AD10BAC1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileImporterPlugIn", "PlugIns\FileImporterPlugIn\FileImporterPlugIn.csproj", "{8AB843FD-8348-4807-917B-ACB0F1B3E457}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBridge.WPFBase", "DataBridge.WPFBase\DataBridge.WPFBase.csproj", "{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -172,6 +174,18 @@ Global
 		{8AB843FD-8348-4807-917B-ACB0F1B3E457}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{8AB843FD-8348-4807-917B-ACB0F1B3E457}.Release|x86.ActiveCfg = Release|Any CPU
 		{8AB843FD-8348-4807-917B-ACB0F1B3E457}.Release|x86.Build.0 = Release|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Debug|x86.Build.0 = Debug|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Release|x86.ActiveCfg = Release|Any CPU
+		{C1D751B2-0D1F-4B9B-9950-F2C484B7E57F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,6 +193,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{196E83BC-A2EB-4A77-BA4A-FFD9F0AF81FF} = {AA842687-27AF-4CD1-8484-7E3F827C1706}
 		{8AB843FD-8348-4807-917B-ACB0F1B3E457} = {FE241FD2-B915-445C-954E-054EF8431DDD}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E9DE998E-E4B7-4647-99F5-EC11B925AA5D}
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = OLEDBtest.vsmdi

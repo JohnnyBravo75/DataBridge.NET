@@ -110,6 +110,10 @@
       <Project>{f854202e-7f60-4c87-a539-98d34154ad2a}</Project>
       <Name>DataBridge.GUI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DataBridge.WPFBase\DataBridge.WPFBase.csproj">
+      <Project>{c1d751b2-0d1f-4b9b-9950-f2c484b7e57f}</Project>
+      <Name>DataBridge.WPFBase</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

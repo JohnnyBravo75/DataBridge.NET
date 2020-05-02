@@ -208,18 +208,24 @@ namespace DataBridge.GUI.Core.View
             //var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             //foreach (var assembly in assemblies)
             //{
-            Assembly assembly = Assembly.GetExecutingAssembly();
+            ScanAssembly(Assembly.GetEntryAssembly());
+            ScanAssembly(Assembly.GetExecutingAssembly());
+            //}
+        }
 
+        private void ScanAssembly(Assembly assembly)
+        {
             var types = assembly.GetTypes();
             foreach (var type in types)
             {
                 if (type.IsSubclassOf(typeof(WPFWindow)))
                 {
-                    this.windowTypes.Add(type);
+                    if (!this.windowTypes.Contains(type))
+                    {
+                        this.windowTypes.Add(type);
+                    }
                 }
             }
-
-            //}
         }
 
         /// <summary>

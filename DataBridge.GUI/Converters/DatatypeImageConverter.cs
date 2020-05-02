@@ -1,4 +1,4 @@
-﻿namespace DataBridge.GUI.Converters
+﻿namespace DataBridge.GUI.SpecialConverters
 {
     using System;
     using System.Windows.Data;
