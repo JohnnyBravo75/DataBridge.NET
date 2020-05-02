@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml.Serialization;
 using DataConnectors.Formatters;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace DataBridge.Commands
 {
@@ -57,6 +58,7 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("MinTimeGenerated", value); }
         }
 
+        [ExpandableObject]
         public FormatterBase Formatter
         {
             get { return this.formatter; }
