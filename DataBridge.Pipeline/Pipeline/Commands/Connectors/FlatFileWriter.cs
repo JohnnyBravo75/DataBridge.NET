@@ -4,6 +4,7 @@ using System.Xml.Serialization;
 using DataBridge.Helper;
 using DataConnectors.Adapter.FileAdapter;
 using DataConnectors.Formatters;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace DataBridge.Commands
 {
@@ -42,6 +43,7 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("DeleteBefore", value); }
         }
 
+        [ExpandableObject]
         public FormatterBase Formatter
         {
             get { return this.fileAdapter.WriteFormatter; }

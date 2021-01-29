@@ -5,10 +5,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:WpfControls="clr-namespace:DataBridge.GUI.Core.View.WPFControls"
+    xmlns:WpfControls="clr-namespace:DataBridge.GUI.Core.View.WPFControls;assembly=DataBridge.WPFBase"
     xmlns:UserControls="clr-namespace:DataBridge.GUI.UserControls"
-    xmlns:utils="clr-namespace:DataBridge.GUI.Core.Utils"
-    xmlns:Converters="clr-namespace:DataBridge.GUI.Converters"
+    xmlns:utils="clr-namespace:DataBridge.GUI.Core.Utils;assembly=DataBridge.WPFBase"
+    xmlns:Converters="clr-namespace:DataBridge.GUI.Converters;assembly=DataBridge.WPFBase"
     xmlns:Commands="clr-namespace:Microsoft.Practices.Prism.Commands;assembly=Microsoft.Practices.Prism"
     WindowStartupLocation="CenterScreen"
 >

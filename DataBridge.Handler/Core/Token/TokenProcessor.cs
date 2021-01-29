@@ -9,6 +9,9 @@ namespace DataBridge
 {
     public class TokenProcessor
     {
+        private const string TOKEN_START = "{";
+        private const string TOKEN_END = "}";
+
         public static string ReplaceTokens(string str, IDictionary<string, object> parameters = null)
         {
             string replacedStr = str;
@@ -32,9 +35,9 @@ namespace DataBridge
             {
                 foreach (var parameter in parameters)
                 {
-                    if (replacedStr.Contains("{" + parameter.Key + "}"))
+                    if (replacedStr.Contains(BuildToken(parameter.Key)))
                     {
-                        replacedStr = replacedStr.Replace("{" + parameter.Key + "}", parameter.Value.ToStringOrEmpty());
+                        replacedStr = replacedStr.Replace(BuildToken(parameter.Key), parameter.Value.ToStringOrEmpty());
                         wasReplaced = true;
                     }
                 }
@@ -42,9 +45,9 @@ namespace DataBridge
 
             foreach (var dateFmt in DateFormats)
             {
-                if (replacedStr.Contains("{" + dateFmt + "}"))
+                if (replacedStr.Contains(BuildToken(dateFmt)))
                 {
-                    replacedStr = replacedStr.Replace("{" + dateFmt + "}", DateTime.Now.ToString(dateFmt));
+                    replacedStr = replacedStr.Replace(BuildToken(dateFmt), DateTime.Now.ToString(dateFmt));
                     wasReplaced = true;
                 }
             }
@@ -85,7 +88,7 @@ namespace DataBridge
             {
                 // PREF_LongName{SubName}_{Number}.{Ext}
                 // PREF_LongName(?<SubName>[\w\[\]]+)_(?<Number>[\w\[\]]+).(?<Ext>[\w\[\]]+)
-                templateRegex = templateRegex.Replace("{" + tokenName + "}", @"(?<" + tokenName + @">[\w\[\]]+)");
+                templateRegex = templateRegex.Replace(TOKEN_START + tokenName + TOKEN_END, @"(?<" + tokenName + @">[\w\[\]]+)");
             }
 
             var regex = new Regex(templateRegex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -109,7 +112,7 @@ namespace DataBridge
         {
             var tokens = new List<string>();
 
-            var regex = new Regex(@"(?<start>\" + "{" + @")+(?<name>[\w\.\[\]]+)(?<end>\" + "}" + @")+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            var regex = new Regex(@"(?<start>\" + TOKEN_START + @")+(?<name>[\w\.\[\]]+)(?<end>\" + TOKEN_END + @")+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
             var matches = regex.Matches(str);
             foreach (Match match in matches)
@@ -155,6 +158,11 @@ namespace DataBridge
             }
         }
 
+        public static string BuildToken(string name)
+        {
+            return $"{TOKEN_START}{name}{TOKEN_END}";
+        }
+
         public static string EvaluateExpression(string str, IDictionary<string, object> parameters, bool throwOnError = true)
         {
             if (parameters == null || string.IsNullOrEmpty(str))
@@ -164,7 +172,7 @@ namespace DataBridge
 
             foreach (var v in parameters)
             {
-                str = str.Replace("{" + v.Key + "}", v.Key);
+                str = str.Replace(BuildToken(v.Key), v.Key);
             }
 
             var lambdaParser = new NReco.Linq.LambdaParser();

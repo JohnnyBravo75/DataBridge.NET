@@ -242,6 +242,48 @@
 
             return result;
         }
+
+        public static TReturn GetValue<TReturn>(this IDictionary<string, object> dictionary, string key)
+        {
+            if (dictionary == null)
+            {
+                return default(TReturn);
+            }
+
+            if (dictionary.ContainsKey(key))
+            {
+                return dictionary[key].ConvertTo<TReturn>();
+            }
+
+            return default(TReturn);
+        }
+
+        public static TReturn GetValueOrAdd<TReturn>(this IDictionary<string, object> dictionary, string key)
+        {
+            if (dictionary == null)
+            {
+                return default(TReturn);
+            }
+
+            if (dictionary.ContainsKey(key))
+            {
+                return dictionary[key].ConvertTo<TReturn>();
+            }
+            dictionary.Add(key, default(TReturn));
+
+            return default(TReturn);
+        }
+
+        public static TReturn GetValueOrDefault<TReturn>(this IDictionary<string, object> dictionary, string key, TReturn defaultValue)
+        {
+            TReturn value;
+            if (dictionary.ContainsKey(key))
+            {
+                return dictionary.GetValue<TReturn>(key);
+            }
+
+            return default(TReturn);
+        }
     }
 
     public static class KeyValuePairExtensions

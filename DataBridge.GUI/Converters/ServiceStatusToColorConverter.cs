@@ -1,7 +1,7 @@
 ﻿using System.ServiceProcess;
 using System.Windows.Media;
 
-namespace DataBridge.GUI.Converters
+namespace DataBridge.GUI.SpecialConverters
 {
     using System;
     using System.Windows.Data;

@@ -4,6 +4,7 @@ using System.Xml.Serialization;
 using DataConnectors.Adapter.FileAdapter;
 using DataConnectors.Formatters;
 using DataConnectors.Formatters.Model;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace DataBridge.Commands
 {
@@ -42,6 +43,7 @@ namespace DataBridge.Commands
             set { this.Parameters.SetOrAddValue("RowXPath", value); }
         }
 
+        [ExpandableObject]
         public FormatterBase Formatter
         {
             get { return this.xmlAdapter.ReadFormatter; }
