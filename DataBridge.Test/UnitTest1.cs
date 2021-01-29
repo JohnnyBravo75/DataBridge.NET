@@ -274,25 +274,26 @@ namespace DataBridge.Test
         [TestMethod]
         public void Test_FtpDownload()
         {
-            var testPipeline = new Pipeline();
-
-            var ftpDownloader = new FtpFileDownloader()
+            using (var testPipeline = new Pipeline())
             {
-                Host = "ftp://speedtest.tele2.net",
-                RemoteDirectory = @"\\1KB.zip",
-                LocalDirectory = this.resultPath,
-                User = "",
-                Password = ""
-            };
+                var ftpDownloader = new FtpFileDownloader()
+                {
+                    Host = "ftp://speedtest.tele2.net",
+                    RemoteDirectory = @"\\1KB.zip",
+                    LocalDirectory = this.resultPath,
+                    User = "",
+                    Password = ""
+                };
 
-            testPipeline.Commands.Add(ftpDownloader);
+                testPipeline.Commands.Add(ftpDownloader);
 
-            testPipeline.ExecutePipeline();
+                testPipeline.ExecutePipeline();
 
-            // check
-            if (!File.Exists(this.resultPath + @"1KB.zip"))
-            {
-                throw new Exception("Downloaded file was not found");
+                // check
+                if (!File.Exists(this.resultPath + @"1KB.zip"))
+                {
+                    throw new Exception("Downloaded file was not found");
+                }
             }
         }
 
@@ -434,6 +435,8 @@ namespace DataBridge.Test
         }
 
         #endregion ******************************** Webservice Tests ********************************
+
+        #region ******************************** Mixed Tests ********************************
 
         [TestMethod]
         public void Test_EmailDownloader()
@@ -655,5 +658,7 @@ namespace DataBridge.Test
                 Assert.AreEqual(response, "<Message>Triggered successfull</Message>");
             }
         }
+
+        #endregion ******************************** Mixed Tests ********************************
     }
 }

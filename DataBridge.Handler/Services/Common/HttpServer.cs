@@ -135,7 +135,6 @@ namespace DataBridge.Services
 
         private void Initialize(int port, string path)
         {
-
             this.requestHandlerAction = this.RequestHandler;
 
             if (!string.IsNullOrEmpty(path) && File.Exists(path))
@@ -204,10 +203,14 @@ namespace DataBridge.Services
 
         private void RegisterPrefix(string prefix)
         {
+            var completeDomainName = !string.IsNullOrEmpty(Environment.UserDomainName)
+                                        ? Environment.UserDomainName + "\\" + Environment.UserName
+                                        : Environment.UserName;
+
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "netsh",
-                Arguments = @" http add urlacl url=" + prefix + " user = \"" + Environment.UserDomainName + @"\" + Environment.UserName + "\" listen =yes",
+                Arguments = @" http add urlacl url=" + prefix + " user = \"" + completeDomainName + "\" listen =yes",
                 Verb = "runas",
                 UseShellExecute = true,
                 WindowStyle = ProcessWindowStyle.Hidden
@@ -312,7 +315,6 @@ namespace DataBridge.Services
                 responsebyte = File.Exists(errorFile)
                                         ? File.ReadAllBytes(errorFile)
                                         : Encoding.UTF8.GetBytes("<H2>404 Error! File does not exist.</H2>");
-
             }
 
             this.WriteToReponse(response, responsebyte);

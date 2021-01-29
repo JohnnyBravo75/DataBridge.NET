@@ -109,6 +109,11 @@
                 }
             }
 
+            return GetInstance<T>(typeName, thowOnError, parameters, type);
+        }
+
+        public static T GetInstance<T>(Type type, object[] parameters, bool thowOnError = false)
+        {
             try
             {
                 return (T)Activator.CreateInstance(type, parameters);
@@ -117,7 +122,7 @@
             {
                 if (thowOnError)
                 {
-                    throw new ArgumentException(string.Format("Could not create type '{0}'", typeName), ex);
+                    throw new ArgumentException(string.Format("Could not create type '{0}'", typeof(T).ToString()), ex);
                 }
                 else
                 {

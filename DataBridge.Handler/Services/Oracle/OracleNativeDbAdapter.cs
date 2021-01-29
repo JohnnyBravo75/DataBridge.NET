@@ -3,7 +3,7 @@ using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
 
 namespace DataBridge.Services
 {
-    public class OracleNativeDbAdapter : DbAdapter
+    public class OracleNativeDbAdapter : OracleAdapter
     {
         public OracleNativeDbAdapter()
         {

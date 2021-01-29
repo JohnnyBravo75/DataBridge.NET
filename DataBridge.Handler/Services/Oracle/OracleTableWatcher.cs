@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using DataConnectors.Adapter.DbAdapter.ConnectionInfos;
-using Oracle.DataAccess.Client;
+using Oracle.ManagedDataAccess.Client;
 
 namespace DataBridge.Services
 {
