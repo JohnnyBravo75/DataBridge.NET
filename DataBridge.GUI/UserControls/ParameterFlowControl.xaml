@@ -1,0 +1,47 @@
+<UserControl x:Class="DataBridge.GUI.UserControls.ParameterFlowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:Converters="clr-namespace:DataBridge.GUI.Converters;assembly=DataBridge.WPFBase"
+             mc:Ignorable="d"
+             d:DesignHeight="40" d:DesignWidth="500"
+             x:Name="flowRoot">
+
+    <UserControl.Resources>
+        <Converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Border Margin="15,0,0,0" Padding="4,3" Background="#1A000000" CornerRadius="3"
+            Visibility="{Binding HasFlowItems, ElementName=flowRoot,
+                         Converter={StaticResource BooleanToVisibilityConverter}}">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                <TextBlock Text="⬇ Parameter-Fluss: " FontSize="10" Foreground="#888" FontStyle="Italic" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding FromCommandTitle, ElementName=flowRoot}" FontSize="10" Foreground="#555" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text=" → " FontSize="10" Foreground="#888" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding ToCommandTitle, ElementName=flowRoot}" FontSize="10" Foreground="#555" FontWeight="Bold" VerticalAlignment="Center"/>
+            </StackPanel>
+            <!-- Matched parameters -->
+            <ItemsControl ItemsSource="{Binding FlowItems, ElementName=flowRoot}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,8,0">
+                            <Border CornerRadius="2" Padding="3,1" Background="#4060A060">
+                                <TextBlock Text="{Binding ParameterName}" FontSize="10" Foreground="#206020" FontWeight="SemiBold"/>
+                            </Border>
+                            <TextBlock Text=" → {" FontSize="10" Foreground="#555" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding TokenName}" FontSize="10" Foreground="#204080" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text="}" FontSize="10" Foreground="#555" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Border>
+</UserControl>

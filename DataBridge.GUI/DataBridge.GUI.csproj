@@ -71,7 +71,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\CommandsToStepsConverter.cs" />
+    <Compile Include="Converters\DirectionFilterConverter.cs" />
+    <Compile Include="Converters\DirectionToColorConverter.cs" />
     <Compile Include="Converters\ServiceStatusToColorConverter.cs" />
+    <Compile Include="Converters\ValidationStatusConverters.cs" />
     <Compile Include="Model\Service.cs" />
     <Compile Include="UserControls\CommandEditors\DataCommandEditor.cs" />
     <Compile Include="UserControls\DataCommandContainerControl.xaml.cs">
@@ -80,15 +84,23 @@
     <Compile Include="UserControls\DataCommandControl.xaml.cs">
       <DependentUpon>DataCommandControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\ParameterBadgesControl.xaml.cs">
+      <DependentUpon>ParameterBadgesControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ParameterFlowControl.xaml.cs">
+      <DependentUpon>ParameterFlowControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\ServiceControllerControl.xaml.cs">
       <DependentUpon>ServiceControllerControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\PipelineEditorControl.xaml.cs">
       <DependentUpon>PipelineEditorControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\AddCommandViewModel.cs" />
     <Compile Include="ViewModels\Base\DataCommandViewModelBase.cs" />
     <Compile Include="ViewModels\DataCommandViewModel.cs" />
     <Compile Include="ViewModels\PipelineEditorViewModel.cs" />
+    <Compile Include="ViewModels\PipelineStepViewModel.cs" />
     <Compile Include="ViewModels\ServiceControllerViewModel.cs" />
     <Compile Include="ViewModels\ServiceMonitorViewModel.cs" />
     <Compile Include="ServiceController.cs">
@@ -96,6 +108,9 @@
     </Compile>
     <Compile Include="UserControls\ServiceMonitorControl.xaml.cs">
       <DependentUpon>ServiceMonitorControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\AddCommandWindow.xaml.cs">
+      <DependentUpon>AddCommandWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -122,6 +137,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="UserControls\ParameterBadgesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\ParameterFlowControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\ServiceControllerControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -133,6 +154,9 @@
     <Page Include="UserControls\ServiceMonitorControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\AddCommandWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

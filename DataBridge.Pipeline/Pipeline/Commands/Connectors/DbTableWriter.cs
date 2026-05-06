@@ -14,6 +14,8 @@ namespace DataBridge.Commands
 
         private DbConnectionInfoBase connectionInfo = new SqlServerConnectionInfo();
 
+        [Xceed.Wpf.Toolkit.PropertyGrid.Attributes.ExpandableObject]
+        [System.ComponentModel.Editor(typeof(Wpf.Toolkit.PropertyEditors.DbConnectionInfoTypeEditor), typeof(Wpf.Toolkit.PropertyEditors.DbConnectionInfoTypeEditor))]
         public DbConnectionInfoBase ConnectionInfo
         {
             get { return this.connectionInfo; }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
 using DataBridge.GUI.Core.DependencyInjection;
 using DataBridge.GUI.ViewModels;
@@ -10,13 +11,8 @@ namespace DataBridge.GUI.UserControls
 
     public partial class PipelineEditorControl : WPFUserControl
     {
-        // ************************************Fields**********************************************
-
         // ************************************Constructors**********************************************
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PipelineEditorControl" /> class.
-        /// </summary>
         public PipelineEditorControl()
         {
             this.InitializeComponent();
@@ -24,26 +20,36 @@ namespace DataBridge.GUI.UserControls
             {
                 this.ViewModel = DependencyContainer.Container.Resolve<PipelineEditorViewModel>();
             }
+
+            // Catch delete requests for top-level pipeline commands
+            this.lbCommands.AddHandler(
+                DataCommandControl.DeleteCommandRequestedEvent,
+                new DeleteCommandRoutedEventHandler(this.lbCommands_DeleteCommandRequested));
         }
 
         // ************************************Properties**********************************************
 
-        /// <summary>
-        /// Gets or sets the view model.
-        /// </summary>
-        /// <value>
-        /// The view model.
-        /// </value>
         public PipelineEditorViewModel ViewModel
         {
-            get
+            get { return this.DataContext as PipelineEditorViewModel; }
+            set { this.DataContext = value; }
+        }
+
+        // ************************************Event Handlers**********************************************
+
+        private void lbCommands_DeleteCommandRequested(object sender, DeleteCommandEventArgs e)
+        {
+            var vm = this.ViewModel;
+            if (vm == null || vm.CurrentPipeline == null)
             {
-                return this.DataContext as PipelineEditorViewModel;
+                return;
             }
 
-            set
+            if (vm.CurrentPipeline.Commands.Remove(e.CommandToDelete))
             {
-                this.DataContext = value;
+                e.Handled = true;
+                vm.RaisePropertyChanged("CurrentPipelineCommands");
+                vm.RaisePropertyChanged("CurrentPipelineSteps");
             }
         }
 
@@ -52,7 +58,7 @@ namespace DataBridge.GUI.UserControls
             this.ViewModel.EditCurrentDataCommand();
         }
 
-        private void MenuItemEdit_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void MenuItemEdit_Click(object sender, RoutedEventArgs e)
         {
             this.ViewModel.EditCurrentDataCommand();
         }

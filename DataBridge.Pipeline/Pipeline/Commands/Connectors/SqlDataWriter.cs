@@ -17,6 +17,8 @@ namespace DataBridge.Commands
 
         private DbAdapter dbAdapter = new DbAdapter();
 
+        [Xceed.Wpf.Toolkit.PropertyGrid.Attributes.ExpandableObject]
+        [System.ComponentModel.Editor(typeof(Wpf.Toolkit.PropertyEditors.DbConnectionInfoTypeEditor), typeof(Wpf.Toolkit.PropertyEditors.DbConnectionInfoTypeEditor))]
         public DbConnectionInfoBase ConnectionInfo { get; set; }
 
         public SqlDataWriter()

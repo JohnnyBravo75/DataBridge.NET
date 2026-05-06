@@ -59,6 +59,7 @@ namespace DataBridge.Commands
         }
 
         [ExpandableObject]
+        [System.ComponentModel.Editor(typeof(Wpf.Toolkit.PropertyEditors.FormatterTypeEditor), typeof(Wpf.Toolkit.PropertyEditors.FormatterTypeEditor))]
         public FormatterBase Formatter
         {
             get { return this.formatter; }
