@@ -88,11 +88,9 @@
             <ItemsControl ItemsSource="{Binding Commands, Converter={StaticResource CommandsToStepsConverter}}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Vertical" x:Name="subStepPanel">
-                            <Border BorderBrush="#DDDDDD" BorderThickness="0,0,0,2" Padding="0,2,0,5">
-                                <userControls:DataCommandControl DataContext="{Binding Command}"
+                        <StackPanel Orientation="Vertical" x:Name="subStepPanel" Margin="30,0,0,0">
+                            <userControls:DataCommandControl DataContext="{Binding Command}"
                                     AvailableTokens="{Binding DataContext.AvailableTokens, RelativeSource={RelativeSource AncestorType=StackPanel}}" />
-                            </Border>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

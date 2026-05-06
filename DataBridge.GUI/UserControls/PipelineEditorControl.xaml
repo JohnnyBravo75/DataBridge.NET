@@ -86,7 +86,7 @@
             <ItemsControl x:Name="lbCommands" ItemsSource="{Binding CurrentPipelineSteps}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderBrush="#CCCCCC" BorderThickness="0,0,0,1" Margin="0,0,0,20">
+                        <Border BorderBrush="#CCCCCC" BorderThickness="0,0,0,1" Padding="0,2,0,5">
                             <StackPanel Orientation="Vertical" x:Name="stepPanel">
                                 <!-- Der DataCommand-Editor -->
                                 <userControls:DataCommandControl DataContext="{Binding Command}"

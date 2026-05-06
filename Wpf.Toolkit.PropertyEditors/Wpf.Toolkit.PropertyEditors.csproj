@@ -50,6 +50,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbConnectionInfoTypeEditor.cs" />
+    <Compile Include="FormatterOptionsEditor.xaml.cs">
+      <DependentUpon>FormatterOptionsEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FormatterTypeEditor.cs" />
     <Compile Include="OpenFilePropertyEditor.xaml.cs">
       <DependentUpon>OpenFilePropertyEditor.xaml</DependentUpon>
@@ -60,6 +63,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="FormatterOptionsEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="OpenFilePropertyEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
