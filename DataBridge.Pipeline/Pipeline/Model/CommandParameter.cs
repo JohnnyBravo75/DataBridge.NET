@@ -73,9 +73,11 @@ namespace DataBridge
             clone.Name = this.name;
             clone.DataType = this.dataType;
             clone.Direction = this.direction;
+            clone.NotNull = this.NotNull;
             clone.Token = this.token;
             clone.Value = this.value;
             clone.UseEncryption = this.UseEncryption;
+            clone.IsValueExpression = this.IsValueExpression;
 
             return clone;
         }

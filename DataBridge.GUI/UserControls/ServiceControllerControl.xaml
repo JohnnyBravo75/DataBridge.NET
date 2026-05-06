@@ -16,6 +16,15 @@
         <Converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <Converters:NullImageConverter x:Key="NullImageConverter" />
         <SpecialConverters:ServiceStatusToColorConverter x:Key="ServiceStatusToColorConverter" />
+
+        <Style x:Key="RunButtonTextStyle" TargetType="TextBlock">
+            <Setter Property="Text" Value="Execute" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsRunningPipeline}" Value="True">
+                    <Setter Property="Text" Value="Executing..." />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </wpfControls:WPFUserControl.Resources>
 
     <wpfControls:WPFUserControl.DataContext>
@@ -35,13 +44,15 @@
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="120" />
+            <ColumnDefinition Width="90" />
         </Grid.ColumnDefinitions>
 
         <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Width="10" HorizontalAlignment="Center" VerticalAlignment="Stretch" Margin="0,2,0,2" Background="{Binding CurrentService.Status, Converter={StaticResource ServiceStatusToColorConverter}}" />
 
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
             <TextBlock Text="{Binding CurrentService.ServiceName}" FontWeight="Black" FontSize="12" />
-            <TextBlock  Margin="20,0,0,0" FontSize="12" Foreground="{Binding CurrentService.Status, Converter={StaticResource ServiceStatusToColorConverter}}">
+            <TextBlock Text="Service:" Margin="20,0,0,0"/>
+            <TextBlock  Margin="5,0,0,0" FontSize="12" Foreground="{Binding CurrentService.Status, Converter={StaticResource ServiceStatusToColorConverter}}">
                 <Run Text="(" /><Run Text="{Binding CurrentService.Status, Mode=OneWay}" /><Run Text=")" />
             </TextBlock>
             <!--<TextBlock Text="{Binding CurrentService.MachineName}" Margin="20,0,0,0" />-->
@@ -54,18 +65,25 @@
         <wpfControls:WPFButton Margin="2" Grid.Row="0" Grid.Column="2" Width="80" HorizontalAlignment="Right"      x:Name="btn_StartService"       Command="{Binding ServiceControllerCommand}" CommandParameter="Start" Visibility="{Binding CanStartService, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal">
                 <!--<Image Source="\Resources\Images\mm-Play.png" Width="16" Height="16" />-->
-                <TextBlock Margin="5,0,0,0" Text="Start" />
+                <TextBlock Margin="5,0,0,0" Text="Start service" />
             </StackPanel>
         </wpfControls:WPFButton>
 
         <wpfControls:WPFButton Margin="2" Grid.Row="0" Grid.Column="2" Width="80"  HorizontalAlignment="Right"      x:Name="btn_StopService"        Command="{Binding ServiceControllerCommand}" CommandParameter="Stop" Visibility="{Binding CanStopService, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal">
                 <!--<Image Source="\Resources\Images\mm-Stop.png" Width="16" Height="16" />-->
-                <TextBlock Margin="5,0,0,0" Text="Stop" />
+                <TextBlock Margin="5,0,0,0" Text="Stop service" />
             </StackPanel>
         </wpfControls:WPFButton>
 
         <wpfControls:WPFButton Margin="2" Grid.Row="1"  Grid.Column="2" Width="80" Content="Edit"  HorizontalAlignment="Right" Click="ButtonEdit_OnClick" />
+
+        <wpfControls:WPFButton Margin="2" Grid.Row="1" Grid.Column="3" Width="80" HorizontalAlignment="Right"
+                               Command="{Binding ServiceControllerCommand}" CommandParameter="RunPipeline">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="5,0,0,0" Style="{StaticResource RunButtonTextStyle}" />
+            </StackPanel>
+        </wpfControls:WPFButton>
 
         <Expander Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="-3,2,0,0">
             <Expander.Header>

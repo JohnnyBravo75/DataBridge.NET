@@ -24,7 +24,9 @@
     <Grid x:Name="LayoutRoot" Margin="15,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -47,18 +49,36 @@
                     Click="btnDelete_Click" />
         </Grid>
 
-        <!--****Row 1: PropertyGrid****-->
-        <wpfToolkit:PropertyGrid Grid.Row="1" HorizontalAlignment="Left" Width="400" x:Name="PropertyGrid"
+        <!--****Row 1: In Parameter Badges****-->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,0">
+            <TextBlock Text="IN:" FontWeight="Bold" Margin="0,0,2,0" />
+            <userControls:ParameterBadgesControl
+                Parameters="{Binding Parameters}"
+                DirectionFilter="In,InOut"
+                IsClickable="False" />
+        </StackPanel>
+
+        <!--****Row 2: PropertyGrid****-->
+        <wpfToolkit:PropertyGrid Grid.Row="2" HorizontalAlignment="Left" Width="400" x:Name="PropertyGrid"
                                  AutoGenerateProperties="True" SelectedObject="{Binding}" Background="Transparent"
                                  ShowSearchBox="False" ShowAdvancedOptions="False" ShowSortOptions="False"
                                  ShowSummary="False" ShowTitle="False" ShowDescriptionByTooltip="True" ShowPreview="False" />
 
-        <!--****Row 2: Add Sub-Step****-->
-        <Button Grid.Row="2" Content="+ Unterschritt" HorizontalAlignment="Left" Margin="0,4" Padding="6,2"
+        <!--****Row 3: Out Parameter Badges****-->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,4,0,0">
+            <TextBlock Text="OUT:" FontWeight="Bold" Margin="0,0,2,0" />
+            <userControls:ParameterBadgesControl
+                Parameters="{Binding Parameters}"
+                DirectionFilter="Out,InOut"
+                IsClickable="True" />
+        </StackPanel>
+
+        <!--****Row 4: Add Sub-Step****-->
+        <Button Grid.Row="4" Content="+ Unterschritt" HorizontalAlignment="Left" Margin="0,4" Padding="6,2"
                 Click="btnAddSubStep_Click" />
 
-        <!--****Row 3: Child Commands Expander****-->
-        <Expander Grid.Row="3">
+        <!--****Row 5: Child Commands Expander****-->
+        <Expander Grid.Row="5">
             <Expander.Header>
                 <StackPanel Orientation="Horizontal"
                         Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Expander}}, Path=IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
@@ -69,24 +89,15 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical" x:Name="subStepPanel">
-                            <userControls:ParameterBadgesControl
-                                Parameters="{Binding Command.Parameters}"
-                                DirectionFilter="In,InOut"
-                                IsClickable="False"
-                                Margin="15,4,0,0" />
-                            <Border BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="0,2,0,2">
+                            <Border BorderBrush="#DDDDDD" BorderThickness="0,0,0,2" Padding="0,2,0,5">
                                 <userControls:DataCommandControl DataContext="{Binding Command}"
                                     AvailableTokens="{Binding DataContext.AvailableTokens, RelativeSource={RelativeSource AncestorType=StackPanel}}" />
                             </Border>
-                            <userControls:ParameterBadgesControl
-                                Parameters="{Binding Command.Parameters}"
-                                DirectionFilter="Out,InOut"
-                                IsClickable="True"
-                                Margin="15,0,0,4" />
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Expander>
+
     </Grid>
 </wpfControls:WPFUserControl>

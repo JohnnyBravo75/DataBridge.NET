@@ -290,7 +290,7 @@ namespace DataBridge
             //    yield return this.TransferOutParameters(param);
             //}
 
-            var enumerator = this.Execute(inParameters).GetEnumerator();
+            var enumerator = this.Execute(this.ValidateInParameters(inParameters)).GetEnumerator();
             while (true)
             {
                 CommandParameters param = null;
@@ -315,6 +315,64 @@ namespace DataBridge
                 // the yield statement is outside the try catch block
                 yield return this.TransferOutParameters(param);
             }
+        }
+
+        private IEnumerable<CommandParameters> ValidateInParameters(IEnumerable<CommandParameters> inParameters)
+        {
+            if (inParameters == null)
+            {
+                yield break;
+            }
+
+            foreach (var currentInParameters in inParameters)
+            {
+                if (this.ValidateParameters(currentInParameters))
+                {
+                    yield return currentInParameters;
+                }
+            }
+        }
+
+        private bool ValidateParameters(CommandParameters inParameters)
+        {
+            var currentInParameters = inParameters ?? new CommandParameters();
+            var requiredInParameters = this.ExecuteParameters
+                .Where(x => (x.Direction == Directions.In || x.Direction == Directions.InOut) && x.NotNull)
+                .ToList();
+
+            var invalidParameters = new List<CommandParameter>();
+
+            foreach (var requiredParameter in requiredInParameters)
+            {
+                var incomingParameter = currentInParameters.FirstOrDefault(x => x.Name == requiredParameter.Token)
+                                      ?? currentInParameters.FirstOrDefault(x => x.Name == requiredParameter.Name)
+                                      ?? this.ExecuteParameters.FirstOrDefault(x => x.Name == requiredParameter.Name);
+
+                if (incomingParameter == null || !incomingParameter.HasValue)
+                {
+                    invalidParameters.Add(requiredParameter);
+                }
+            }
+
+            if (!invalidParameters.Any())
+            {
+                return true;
+            }
+
+            foreach (var invalidParameter in invalidParameters)
+            {
+                this.LogErrorFormat("Required input parameter '{0}' is null or empty.", invalidParameter.Name);
+            }
+
+            if (this.ErrorHandling == ErrorHandlingOptions.Raise)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Missing required input parameter(s): {0}",
+                        string.Join(", ", invalidParameters.Select(x => string.Format("'{0}'", x.Name)))));
+            }
+
+            return false;
         }
 
         protected virtual IEnumerable<CommandParameters> Execute(IEnumerable<CommandParameters> inParameters)

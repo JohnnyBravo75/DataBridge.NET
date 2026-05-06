@@ -53,7 +53,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <wpfControls:WPFComboBox x:Name ="cmbPipeline" HorizontalAlignment="Stretch" Margin="2"
+        <wpfControls:WPFComboBox x:Name ="cmbPipeline" HorizontalAlignment="Stretch" Margin="2" FontSize="16" FontWeight="Bold"
                                                     ItemsSource="{Binding CurrentDataBridgeInfo.PipelineInfos}"
                                                     DisplayMemberPath="Name"
                                                     SelectedItem="{Binding CurrentPipelineInfo, Mode=TwoWay, Converter={StaticResource DebugConverter}}" />
@@ -61,12 +61,13 @@
         <!-- Header-->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="88*" />
+                <ColumnDefinition Width="27*"/>
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <wpfControls:WPFTitleText Grid.Column="0" Text="Pipeline" />
-            <Button Grid.Column="1" Content="Speichern" Margin="2" Padding="6,2"
-                    Command="{Binding SavePipelineCommand}" />
+            <!--<wpfControls:WPFTitleText Grid.Column="0" Text="Pipeline" Grid.ColumnSpan="3" Margin="0,0,70,0" />
+            <Button Grid.Column="2" Content="Speichern" Margin="2,2,2,2" Padding="6,2"
+                    Command="{Binding SavePipelineCommand}" />-->
         </Grid>
 
         <!--<wpfControls:WPFTreeView Grid.Row="2" x:Name="treeCommands" Visibility="Collapsed"
@@ -85,23 +86,11 @@
             <ItemsControl x:Name="lbCommands" ItemsSource="{Binding CurrentPipelineSteps}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderBrush="#CCCCCC" BorderThickness="0,0,0,1" Margin="0,0,0,8">
+                        <Border BorderBrush="#CCCCCC" BorderThickness="0,0,0,1" Margin="0,0,0,20">
                             <StackPanel Orientation="Vertical" x:Name="stepPanel">
-                                <!-- In-Badges: zeigt was dieser Schritt erwartet -->
-                                <userControls:ParameterBadgesControl
-                                    Parameters="{Binding Command.Parameters}"
-                                    DirectionFilter="In,InOut"
-                                    IsClickable="False"
-                                    Margin="15,4,0,0" />
                                 <!-- Der DataCommand-Editor -->
                                 <userControls:DataCommandControl DataContext="{Binding Command}"
                                     AvailableTokens="{Binding DataContext.AvailableTokens, RelativeSource={RelativeSource AncestorType=StackPanel}}" />
-                                <!-- Out-Badges: klickbar, kopiert {Token} in Zwischenablage -->
-                                <userControls:ParameterBadgesControl
-                                    Parameters="{Binding Command.Parameters}"
-                                    DirectionFilter="Out,InOut"
-                                    IsClickable="True"
-                                    Margin="15,0,0,6" />
                             </StackPanel>
                         </Border>
                     </DataTemplate>

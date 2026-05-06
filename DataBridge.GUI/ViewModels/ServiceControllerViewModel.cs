@@ -16,8 +16,10 @@ namespace DataBridge.GUI.ViewModels
     {
         private bool canStartService;
         private bool canStopService;
+        private bool isRunningPipeline;
         private ServiceController currentService;
         private DataBridgeInfo currentDataBridgeInfo;
+        private PipelineInfo currentPipelineInfo;
 
         // ************************************Constructor**********************************************
 
@@ -54,7 +56,33 @@ namespace DataBridge.GUI.ViewModels
             }
         }
 
-        public PipelineInfo CurrentPipelineInfo { get; set; }
+        public bool IsRunningPipeline
+        {
+            get { return this.isRunningPipeline; }
+            private set
+            {
+                if (this.isRunningPipeline != value)
+                {
+                    this.isRunningPipeline = value;
+                    this.RaisePropertyChanged("IsRunningPipeline");
+                    this.ServiceControllerCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        public PipelineInfo CurrentPipelineInfo
+        {
+            get { return this.currentPipelineInfo; }
+            set
+            {
+                if (this.currentPipelineInfo != value)
+                {
+                    this.currentPipelineInfo = value;
+                    this.RaisePropertyChanged("CurrentPipelineInfo");
+                    this.ServiceControllerCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
 
         public ObservableCollection<PipelineInfo> CurrentPipelineInfos
         {
@@ -164,6 +192,10 @@ namespace DataBridge.GUI.ViewModels
                     Process.Start("notepad.exe", this.CurrentPipelineInfo.Properties["LogPathComplete"].ToStringOrEmpty());
                     break;
 
+                case "RunPipeline":
+                    this.HandleRunPipeline(true);
+                    break;
+
                 default:
                     throw new Exception(string.Format("The action '{0}' is not supported", action));
             }
@@ -225,6 +257,28 @@ namespace DataBridge.GUI.ViewModels
                         return false;
                     }
                     break;
+
+                case "RunPipeline":
+                    if (this.IsRunningPipeline)
+                    {
+                        return false;
+                    }
+
+                    if (this.CurrentService == null)
+                    {
+                        return false;
+                    }
+
+                    if (this.CurrentPipelineInfo == null)
+                    {
+                        return false;
+                    }
+
+                    if (!File.Exists(this.GetCurrentPipelineFilePath()))
+                    {
+                        return false;
+                    }
+                    break;
             }
 
             return true;
@@ -240,6 +294,88 @@ namespace DataBridge.GUI.ViewModels
                 }
                 return Path.Combine(this.CurrentService.ServiceDirectory, DataBridgeManager.Instance.ConfigFolderName);
             }
+        }
+
+        private void HandleRunPipeline(bool showMessageBoxOnError)
+        {
+            var pipelineFilePath = this.GetCurrentPipelineFilePath();
+            var pipelineName = this.CurrentPipelineInfo != null ? this.CurrentPipelineInfo.Name : string.Empty;
+            var loggerName = !string.IsNullOrEmpty(pipelineName)
+                                 ? pipelineName
+                                 : (this.CurrentService != null ? this.CurrentService.ServiceName : string.Empty);
+            var runId = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
+
+            LogManager.Instance.LogNamedDebugFormat(loggerName, this.GetType(), "#########  Pipeline run '{0}' triggered. Pipeline='{1}', File='{2}'", runId, pipelineName, pipelineFilePath);
+
+            if (!File.Exists(pipelineFilePath))
+            {
+                var message = string.Format("Pipeline run '{0}' failed: pipeline file '{1}' not found.", runId, pipelineFilePath);
+                LogManager.Instance.LogNamedError(loggerName, this.GetType(), message);
+
+                if (showMessageBoxOnError)
+                {
+                    MessageBox.Show(message, "Error");
+                }
+
+                return;
+            }
+
+            this.IsRunningPipeline = true;
+
+            System.Threading.ThreadPool.QueueUserWorkItem(x =>
+            {
+                var runSuccess = false;
+                try
+                {
+                    using (var pipeline = Pipeline.Load(pipelineFilePath))
+                    {
+                        pipeline.ExecutePipeline();
+                    }
+
+                    runSuccess = true;
+                }
+                catch (Exception ex)
+                {
+                    var shortError = ex.GetBaseException() != null
+                                         ? ex.GetBaseException().Message
+                                         : ex.Message;
+                    var message = string.Format("######### Pipeline run '{0}' failed for '{1}'. Error: {2}", runId, pipelineName, shortError);
+                    LogManager.Instance.LogNamedError(loggerName, this.GetType(), message, ex);
+
+                    if (showMessageBoxOnError)
+                    {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                            MessageBox.Show(string.Format("{0} \r\n{1}", message, ex.GetAllMessages()), "Error")));
+                    }
+                }
+                finally
+                {
+                    LogManager.Instance.LogNamedDebugFormat(
+                        loggerName,
+                        this.GetType(),
+                        "######### Pipeline run '{0}' finished. Pipeline='{1}', State='{2}'",
+                        runId,
+                        pipelineName,
+                        runSuccess ? "Successful" : "Error");
+
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() => this.IsRunningPipeline = false));
+                }
+            });
+        }
+
+        private string GetCurrentPipelineFilePath()
+        {
+            if (this.CurrentPipelineInfo == null)
+            {
+                return string.Empty;
+            }
+
+            if (Path.IsPathRooted(this.CurrentPipelineInfo.FileName))
+            {
+                return this.CurrentPipelineInfo.FileName;
+            }
+
+            return Path.Combine(this.ConfigDirectory, this.CurrentPipelineInfo.FileName);
         }
 
         // ************************************Functions**********************************************

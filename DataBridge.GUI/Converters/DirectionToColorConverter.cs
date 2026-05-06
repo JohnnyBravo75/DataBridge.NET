@@ -18,11 +18,11 @@ namespace DataBridge.GUI.Converters
                 switch ((Directions)value)
                 {
                     case Directions.In:
-                        return new SolidColorBrush(Color.FromRgb(70, 130, 180));   // SteelBlue
+                        return new SolidColorBrush(Color.FromRgb(180, 180, 180));   // SteelBlue
                     case Directions.Out:
-                        return new SolidColorBrush(Color.FromRgb(60, 160, 80));    // Green
+                        return new SolidColorBrush(Color.FromRgb(180, 180, 180));    // SteelBlue
                     case Directions.InOut:
-                        return new SolidColorBrush(Color.FromRgb(140, 80, 180));   // Purple
+                        return new SolidColorBrush(Color.FromRgb(180, 180, 180));   // SteelBlue
                 }
             }
             return new SolidColorBrush(Colors.Gray);
