@@ -1,17 +1,24 @@
-﻿using DataBridge.GUI.Core.View;
+using DataBridge.GUI.Core.View;
 
 namespace DataBridge.GUI.ViewModels
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Controls.Primitives;
+    using DataBridge;
     using DataBridge.GUI.Core.View.ViewModels;
+    using DataBridge.GUI.Model;
+    using DataBridge.GUI.Services;
     using DataBridge.Runtime;
     using Microsoft.Practices.Prism.Commands;
+    using Microsoft.Practices.Unity;
 
     public class PipelineEditorViewModel : ViewModelBase
     {
@@ -22,6 +29,30 @@ namespace DataBridge.GUI.ViewModels
         private DataCommand currentDataCommand;
         private DelegateCommand savePipelineCommand;
         private DelegateCommand addStepCommand;
+        private DelegateCommand debugCommand;
+        private DelegateCommand cancelDebugCommand;
+        private DelegateCommand openPipelineXmlCommand;
+        private readonly IDataCommandDebugService debugExecutionService;
+        private CancellationTokenSource debugCancellationTokenSource;
+        private bool isDebugRunning;
+        private string debugStatusText;
+        private string debugDurationText;
+
+        [InjectionConstructor]
+        public PipelineEditorViewModel()
+            : this(new PipelineDebugExecutionService())
+        {
+        }
+
+        public PipelineEditorViewModel(IDataCommandDebugService debugExecutionService)
+        {
+            this.debugExecutionService = debugExecutionService ?? new PipelineDebugExecutionService();
+            this.DebugOutputEntries = new ObservableCollection<DebugLogEntry>();
+            this.DebugErrorEntries = new ObservableCollection<DebugLogEntry>();
+            this.DebugLogEntries = new ObservableCollection<DebugLogEntry>();
+            this.DebugStatusText = "Bereit";
+            this.DebugDurationText = "-";
+        }
 
         public DataBridgeInfo CurrentDataBridgeInfo
         {
@@ -51,9 +82,17 @@ namespace DataBridge.GUI.ViewModels
                     {
                         this.savePipelineCommand.RaiseCanExecuteChanged();
                     }
+                    if (this.openPipelineXmlCommand != null)
+                    {
+                        this.openPipelineXmlCommand.RaiseCanExecuteChanged();
+                    }
                     if (this.addStepCommand != null)
                     {
                         this.addStepCommand.RaiseCanExecuteChanged();
+                    }
+                    if (this.debugCommand != null)
+                    {
+                        this.debugCommand.RaiseCanExecuteChanged();
                     }
                 }
             }
@@ -85,7 +124,14 @@ namespace DataBridge.GUI.ViewModels
         public string ConfigDirectory
         {
             get { return this.configDirectory; }
-            set { this.configDirectory = value; }
+            set
+            {
+                this.configDirectory = value;
+                if (this.openPipelineXmlCommand != null)
+                {
+                    this.openPipelineXmlCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public DataCommand CurrentDataCommand
@@ -100,6 +146,59 @@ namespace DataBridge.GUI.ViewModels
                 }
             }
         }
+
+        public bool IsDebugRunning
+        {
+            get { return this.isDebugRunning; }
+            private set
+            {
+                if (this.isDebugRunning != value)
+                {
+                    this.isDebugRunning = value;
+                    this.RaisePropertyChanged("IsDebugRunning");
+                    if (this.debugCommand != null)
+                    {
+                        this.debugCommand.RaiseCanExecuteChanged();
+                    }
+                    if (this.cancelDebugCommand != null)
+                    {
+                        this.cancelDebugCommand.RaiseCanExecuteChanged();
+                    }
+                }
+            }
+        }
+
+        public string DebugStatusText
+        {
+            get { return this.debugStatusText; }
+            private set
+            {
+                if (this.debugStatusText != value)
+                {
+                    this.debugStatusText = value;
+                    this.RaisePropertyChanged("DebugStatusText");
+                }
+            }
+        }
+
+        public string DebugDurationText
+        {
+            get { return this.debugDurationText; }
+            private set
+            {
+                if (this.debugDurationText != value)
+                {
+                    this.debugDurationText = value;
+                    this.RaisePropertyChanged("DebugDurationText");
+                }
+            }
+        }
+
+        public ObservableCollection<DebugLogEntry> DebugOutputEntries { get; private set; }
+
+        public ObservableCollection<DebugLogEntry> DebugErrorEntries { get; private set; }
+
+        public ObservableCollection<DebugLogEntry> DebugLogEntries { get; private set; }
 
         /// <summary>
         /// Returns a new list instance wrapping Pipeline.Commands so that
@@ -174,6 +273,10 @@ namespace DataBridge.GUI.ViewModels
                             this.RaisePropertyChanged("CurrentPipeline");
                             this.RaisePropertyChanged("CurrentPipelineCommands");
                             this.RaisePropertyChanged("CurrentPipelineSteps");
+                            if (this.debugCommand != null)
+                            {
+                                this.debugCommand.RaiseCanExecuteChanged();
+                            }
                         }
                     }
                 },
@@ -187,6 +290,30 @@ namespace DataBridge.GUI.ViewModels
                 return this.savePipelineCommand ?? (this.savePipelineCommand = new DelegateCommand(
                     this.SaveCurrentPipeline,
                     () => this.CurrentPipeline != null && this.CurrentPipelineInfo != null));
+            }
+        }
+
+        public DelegateCommand DebugCommand
+        {
+            get
+            {
+                return this.debugCommand ?? (this.debugCommand = new DelegateCommand(this.ExecuteDebug, this.CanExecuteDebug));
+            }
+        }
+
+        public DelegateCommand CancelDebugCommand
+        {
+            get
+            {
+                return this.cancelDebugCommand ?? (this.cancelDebugCommand = new DelegateCommand(this.CancelDebug, () => this.IsDebugRunning));
+            }
+        }
+
+        public DelegateCommand OpenPipelineXmlCommand
+        {
+            get
+            {
+                return this.openPipelineXmlCommand ?? (this.openPipelineXmlCommand = new DelegateCommand(this.OpenPipelineXml, this.CanOpenPipelineXml));
             }
         }
 
@@ -237,6 +364,139 @@ namespace DataBridge.GUI.ViewModels
                   }
               },
               viewModel);
+        }
+
+        private bool CanOpenPipelineXml()
+        {
+            if (this.CurrentPipelineInfo == null || string.IsNullOrWhiteSpace(this.ConfigDirectory))
+            {
+                return false;
+            }
+
+            var path = Path.Combine(this.ConfigDirectory, this.CurrentPipelineInfo.FileName);
+            return File.Exists(path);
+        }
+
+        private void OpenPipelineXml()
+        {
+            if (!this.CanOpenPipelineXml())
+            {
+                return;
+            }
+
+            var path = Path.Combine(this.ConfigDirectory, this.CurrentPipelineInfo.FileName);
+
+            try
+            {
+                Process.Start(path);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Fehler beim Öffnen der Pipeline-XML: {0}", ex.Message),
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanExecuteDebug()
+        {
+            return !this.IsDebugRunning && this.CurrentPipeline != null &&
+                   this.CurrentPipeline.Commands != null &&
+                   this.CurrentPipeline.Commands.Count > 0;
+        }
+
+        private async void ExecuteDebug()
+        {
+            if (!this.CanExecuteDebug())
+            {
+                return;
+            }
+
+            this.DebugOutputEntries.Clear();
+            this.DebugErrorEntries.Clear();
+            this.DebugLogEntries.Clear();
+
+            this.IsDebugRunning = true;
+            this.DebugStatusText = "Debug läuft...";
+            this.DebugDurationText = "-";
+
+            var startedAt = DateTime.Now;
+            var cts = new CancellationTokenSource();
+            this.debugCancellationTokenSource = cts;
+
+            try
+            {
+                var progress = new Progress<DebugLogEntry>(this.AppendDebugEntry);
+                var result = await this.debugExecutionService.ExecuteAsync(this.CurrentPipeline, progress, cts.Token);
+
+                this.DebugStatusText = string.Format("{0} (ExitCode: {1})",
+                    result.SummaryMessage ?? (result.Success ? "Erfolgreich" : "Fehlgeschlagen"),
+                    result.ExitCode.HasValue ? result.ExitCode.Value.ToString() : "-");
+                this.DebugDurationText = result.Duration.ToString(@"hh\:mm\:ss\.fff");
+            }
+            catch (OperationCanceledException)
+            {
+                this.DebugStatusText = "Debug-Ausführung wurde abgebrochen.";
+                this.DebugDurationText = (DateTime.Now - startedAt).ToString(@"hh\:mm\:ss\.fff");
+            }
+            catch (Exception ex)
+            {
+                var entry = new DebugLogEntry
+                {
+                    Timestamp = DateTime.Now,
+                    Level = DebugLogLevel.Error,
+                    Source = "PipelineEditor",
+                    Message = ex.Message,
+                    ExceptionText = ex.ToString()
+                };
+
+                this.AppendDebugEntry(entry);
+                this.DebugStatusText = "Debug-Ausführung mit Exception fehlgeschlagen.";
+                this.DebugDurationText = (DateTime.Now - startedAt).ToString(@"hh\:mm\:ss\.fff");
+            }
+            finally
+            {
+                if (ReferenceEquals(this.debugCancellationTokenSource, cts))
+                {
+                    this.debugCancellationTokenSource = null;
+                }
+
+                cts.Dispose();
+                this.IsDebugRunning = false;
+            }
+        }
+
+        private void CancelDebug()
+        {
+            if (!this.IsDebugRunning)
+            {
+                return;
+            }
+
+            var cts = this.debugCancellationTokenSource;
+            if (cts != null && !cts.IsCancellationRequested)
+            {
+                cts.Cancel();
+                this.DebugStatusText = "Abbruch angefordert...";
+            }
+        }
+
+        private void AppendDebugEntry(DebugLogEntry entry)
+        {
+            if (entry == null)
+            {
+                return;
+            }
+
+            this.DebugLogEntries.Add(entry);
+
+            if (entry.Level == DebugLogLevel.Error || entry.Level == DebugLogLevel.Fatal)
+            {
+                this.DebugErrorEntries.Add(entry);
+            }
+            else
+            {
+                this.DebugOutputEntries.Add(entry);
+            }
         }
     }
 }

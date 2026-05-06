@@ -284,6 +284,7 @@ namespace DataBridge
 
         public IEnumerable<CommandParameters> ExecuteCommand(IEnumerable<CommandParameters> inParameters)
         {
+
             // try-catch only possible with outimplemented enumerator, not with foreach-yield
             //foreach (var param in this.Execute(inParameters))
             //{
@@ -312,6 +313,8 @@ namespace DataBridge
                     break;
                 }
 
+
+
                 // the yield statement is outside the try catch block
                 yield return this.TransferOutParameters(param);
             }
@@ -326,6 +329,8 @@ namespace DataBridge
 
             foreach (var currentInParameters in inParameters)
             {
+                this.LogDebugFormat("Parameters '{0}'", StringFormatParameters(currentInParameters));
+
                 if (this.ValidateParameters(currentInParameters))
                 {
                     yield return currentInParameters;
@@ -766,6 +771,22 @@ namespace DataBridge
         }
 
         public event Action<CommandParameters> OnParametersIncoming;
+
+        private static string StringFormatParameters(CommandParameters parameters)
+        {
+            if (parameters == null || parameters.Count == 0)
+            {
+                return "<leer>";
+            }
+
+            var pairs = parameters.Select(p =>
+            {
+                var key = !string.IsNullOrWhiteSpace(p.Token) ? p.Token : p.Name;
+                return key + "=" + (p.Value != null ? p.Value.ToString() : "<null>");
+            });
+
+            return string.Join(", ", pairs);
+        }
     }
 
     public class InitializationResult

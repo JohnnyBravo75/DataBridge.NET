@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Xml.Serialization;
 using DataBridge.Helper;
 using DataConnectors.Adapter.FileAdapter;
@@ -80,7 +81,8 @@ namespace DataBridge.Commands
                 }
                 this.fileAdapter.Encoding = EncodingUtil.GetEncodingOrDefault(encodingName);
 
-                this.LogDebugFormat("Start reading File='{0}'", file);
+
+                this.LogDebugFormat("Start reading File='{0}', CurrentDirectory={1}", file, Directory.GetCurrentDirectory());
 
                 int rowCount = 0;
                 foreach (var table in this.fileAdapter.ReadData(this.MaxRowsToRead))

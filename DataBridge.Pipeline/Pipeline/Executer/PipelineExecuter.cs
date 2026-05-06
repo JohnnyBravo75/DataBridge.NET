@@ -17,6 +17,8 @@ namespace DataBridge
 
         public event Action<DataCommand> OnExecuteCommand;
 
+        public event Action<DataCommand, CommandParameters> OnCommandParametersOutgoing;
+
         public event EventHandler<EventArgs<string>> OnExecutionCanceled;
 
         protected bool ExecuteCommand(DataCommand currentCmd, int loopCounter, DataCommand previousCmd = null)
@@ -35,17 +37,25 @@ namespace DataBridge
 
                 if (currentCmd != null)
                 {
+                    if (this.OnExecuteCommand != null)
+                    {
+                        this.OnExecuteCommand(currentCmd);
+                    }
+
                     // Execute the currentCmd command as often as possible and pull the parameters out and push them into the next command
                     int i = 0;
                     CommandParameters lastParameter = null;
+                    bool hasOutgoingParameters = false;
                     TokenManager.Instance.SetTokens(currentCmd.ExecuteParameters.ToDictionary(), this.CurrentPipeline.Name);
 
                     var commandParametersList = new List<CommandParameters> { currentCmd.ExecuteParameters };
                     foreach (CommandParameters outParameters in currentCmd.ExecuteCommand(commandParametersList))
                     {
-                        if (this.OnExecuteCommand != null)
+                        hasOutgoingParameters = true;
+
+                        if (this.OnCommandParametersOutgoing != null)
                         {
-                            this.OnExecuteCommand(currentCmd);
+                            this.OnCommandParametersOutgoing(currentCmd, outParameters);
                         }
 
                         if (currentCmd.HasChildCommands)
@@ -73,6 +83,11 @@ namespace DataBridge
                         lastParameter = outParameters;
 
                         i++;
+                    }
+
+                    if (!hasOutgoingParameters && this.OnCommandParametersOutgoing != null)
+                    {
+                        this.OnCommandParametersOutgoing(currentCmd, currentCmd.GetCurrentOutParameters());
                     }
 
                     currentCmd.AfterExecute();

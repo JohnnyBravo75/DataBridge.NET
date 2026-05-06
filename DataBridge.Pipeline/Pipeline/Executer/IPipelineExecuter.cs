@@ -9,6 +9,8 @@ namespace DataBridge
 
         event Action<DataCommand> OnExecuteCommand;
 
+        event Action<DataCommand, CommandParameters> OnCommandParametersOutgoing;
+
         event EventHandler<EventArgs<string>> OnExecutionCanceled;
 
         bool ExecutePipeline(CommandParameters inParameters = null);

@@ -51,6 +51,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="220" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <wpfControls:WPFComboBox x:Name ="cmbPipeline" HorizontalAlignment="Stretch" Margin="2" FontSize="16" FontWeight="Bold"
@@ -64,23 +67,9 @@
                 <ColumnDefinition Width="88*" />
                 <ColumnDefinition Width="27*"/>
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <!--<wpfControls:WPFTitleText Grid.Column="0" Text="Pipeline" Grid.ColumnSpan="3" Margin="0,0,70,0" />
-            <Button Grid.Column="2" Content="Speichern" Margin="2,2,2,2" Padding="6,2"
-                    Command="{Binding SavePipelineCommand}" />-->
         </Grid>
-
-        <!--<wpfControls:WPFTreeView Grid.Row="2" x:Name="treeCommands" Visibility="Collapsed"
-                  ItemsSource="{Binding CurrentPipeline.Commands}"
-                  ItemTemplate="{StaticResource Level1Template}"
-                  CurrentItem="{Binding CurrentDataCommand, Mode=TwoWay}">
-            <wpfControls:WPFTreeView.ItemContainerStyle>
-                <Style TargetType="{x:Type TreeViewItem}">
-                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                </Style>
-            </wpfControls:WPFTreeView.ItemContainerStyle>
-        </wpfControls:WPFTreeView>-->
 
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <ItemsControl x:Name="lbCommands" ItemsSource="{Binding CurrentPipelineSteps}">
@@ -108,8 +97,48 @@
                 <Button Content="+ Schritt hinzufügen" Margin="2" Padding="8,3"
                         Command="{Binding AddStepCommand}" />
             </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="4" Margin="2" Padding="4" BorderBrush="#CCCCCC" BorderThickness="1">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Status:" FontWeight="Bold" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding DebugStatusText}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                <TextBlock Text="Dauer:" FontWeight="Bold" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding DebugDurationText}" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <TabControl Grid.Row="5" Margin="2">
+            <TabItem Header="Logs">
+                <ListView ItemsSource="{Binding DebugLogEntries}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Zeit" Width="150" DisplayMemberBinding="{Binding Timestamp}" />
+                            <GridViewColumn Header="Level" Width="70" DisplayMemberBinding="{Binding Level}" />
+                            <GridViewColumn Header="Quelle" Width="220" DisplayMemberBinding="{Binding Source}" />
+                            <GridViewColumn Header="Nachricht" Width="480" DisplayMemberBinding="{Binding Message}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+        </TabControl>
+
+        <!-- Bottom toolbar -->
+        <Grid Grid.Row="6" Margin="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="2" Content="Debug" Margin="2" Padding="8,3"
+         Command="{Binding DebugCommand}" />
+            <Button Grid.Column="3" Content="Stop" Margin="2" Padding="8,3"
+         Command="{Binding CancelDebugCommand}" />
             <Button Grid.Column="1" Content="Speichern" Margin="2" Padding="8,3"
-                    Command="{Binding SavePipelineCommand}" />
+             Command="{Binding SavePipelineCommand}" />
+            <Button Grid.Column="0" Content="XML öffnen" Margin="2" Padding="8,3"
+              Command="{Binding OpenPipelineXmlCommand}" HorizontalAlignment="Left" />
         </Grid>
     </Grid>
 </wpfControls:WPFUserControl>

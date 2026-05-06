@@ -95,11 +95,6 @@ namespace DataBridge
 
             message = type.Name + ": " + "######### " + message;
             logger.Error(message, ex);
-
-            if (logger != this.defaultLogger)
-            {
-                this.defaultLogger.Error(message, ex);
-            }
         }
 
         public void LogNamedErrorFormat(string loggerName, Type type, string message, params object[] args)
@@ -111,11 +106,6 @@ namespace DataBridge
             message = type.Name + ": " + "######### " + message;
 
             logger.ErrorFormat(message, args);
-
-            if (logger != this.defaultLogger)
-            {
-                this.defaultLogger.ErrorFormat(message, args);
-            }
         }
 
         private ILog GetLoggerInternal(string loggerName)

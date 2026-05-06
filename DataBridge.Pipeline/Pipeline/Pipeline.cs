@@ -42,6 +42,8 @@ namespace DataBridge
 
         public event Action<DataCommand> OnExecuteCommand;
 
+        public event Action<DataCommand, CommandParameters> OnCommandParametersOutgoing;
+
         public event EventHandler<EventArgs<string>> OnExecutionCanceled;
 
         [XmlArray("Commands", IsNullable = false)]
@@ -226,6 +228,7 @@ namespace DataBridge
             if (this.executer != null)
             {
                 this.executer.OnExecuteCommand -= this.Executer_OnExecuteCommand;
+                this.executer.OnCommandParametersOutgoing -= this.Executer_OnCommandParametersOutgoing;
                 this.executer.OnExecutionCanceled -= this.Executer_OnExecutionCanceled;
                 this.executer = null;
             }
@@ -271,6 +274,14 @@ namespace DataBridge
             if (this.OnExecuteCommand != null)
             {
                 this.OnExecuteCommand(dataCommand);
+            }
+        }
+
+        private void Executer_OnCommandParametersOutgoing(DataCommand dataCommand, CommandParameters outParameters)
+        {
+            if (this.OnCommandParametersOutgoing != null)
+            {
+                this.OnCommandParametersOutgoing(dataCommand, outParameters);
             }
         }
     }
